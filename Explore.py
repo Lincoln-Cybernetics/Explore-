@@ -55,7 +55,7 @@ class Game(object):
 				maprow.append(plot)
 				self.background.add(plot)
 				if tertype == 'Whirlpool' or tertype == 'Ocean' or tertype == 'Active Volcano':
-					self.unpassable.add(plot)
+					self.player1.unpassable.add(plot)
 			self.maptiles.append(maprow)
 		self.background.add(mygem)
 				
@@ -63,7 +63,7 @@ class Game(object):
     def main(self, screen):
 		#sprite groups
 		self.sprites = pygame.sprite.Group()
-		self.unpassable = pygame.sprite.Group()
+		#self.unpassable = pygame.sprite.Group()
 		self.items = pygame.sprite.Group()
 		self.terrain = pygame.sprite.Group()
 		self.background = pygame.sprite.Group()
