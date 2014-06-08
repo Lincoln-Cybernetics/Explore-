@@ -5,8 +5,16 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self, level, *groups):
 		super(Player, self).__init__(*groups)
 		self.level = level
-		self.Rimg = pygame.image.load('RangerDanR.png')
-		self.Limg = pygame.image.load('RangerDanL.png')
+		self.sheet = pygame.image.load('exp100.png').convert()
+		self.animator = ss.Cutout(self.sheet, 100, 100)
+		self.animator.set_Img(7,2)
+		self.Rimg = self.animator.get_Img().convert()
+		self.Rimg.set_colorkey((255,0,0))
+		#self.Rimg = pygame.image.load('RangerDanR.png')
+		self.animator.set_Img(7,3)
+		self.Limg = self.animator.get_Img().convert()
+		self.Limg.set_colorkey((255,0,0))
+		#self.Limg = pygame.image.load('RangerDanL.png')
 		self.image = self.Rimg
 		self.spawnx = 1
 		self.spawny = 1
@@ -108,6 +116,10 @@ class Player(pygame.sprite.Sprite):
 				self.rect.x += self.level.tilex
 				self.rect.y += self.level.tiley
 				
+		if newx < 0 or newx >= len(self.level.maptiles):
+			self.level.Game_Over = True	
+		elif newy < 0 or newy >= len(self.level.maptiles[newx]):
+			self.level.Game_Over = True		
 				
 		new = self.rect
 		if bgsig == 'NA':
@@ -134,7 +146,8 @@ class Player(pygame.sprite.Sprite):
 				self.indy = newy
 				
 		
-		else:
+		elif self.level.Game_Over == False:
+			
 			if self.level.maptiles[newx][newy] in self.unpassable:
 				pass
 			else:
