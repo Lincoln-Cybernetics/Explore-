@@ -1,10 +1,16 @@
 import pygame
+import ss
 
 
 class Item(pygame.sprite.Sprite):
 	def __init__(self, level, *groups):
 		super(Item, self).__init__(*groups)
-		self.image = pygame.image.load('gem.png')
+		#self.image = pygame.image.load('gem.png')
+		self.sheet = pygame.image.load('exp100.png').convert()
+		self.animator = ss.Cutout(self.sheet, 100, 100)
+		self.animator.set_Img(6,0)
+		self.image = self.animator.get_Img().convert()
+		self.image.set_colorkey((255,0,0))
 		self.level = level
 		self.rect = pygame.rect.Rect((100,100), self.image.get_size())
 		self.flavor = 'gem'
