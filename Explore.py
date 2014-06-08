@@ -61,6 +61,7 @@ class Game(object):
 				
 	#MAIN
     def main(self, screen):
+		self.Game_Over = False
 		#sprite groups
 		self.sprites = pygame.sprite.Group()
 		#self.unpassable = pygame.sprite.Group()
@@ -91,7 +92,7 @@ class Game(object):
 		self.player1.spawn()
 		
 		#main loop
-		while 1:
+		while self.Game_Over == False:
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					return
@@ -116,7 +117,7 @@ class Game(object):
 					
 						
 			self.iterate_Game()
-			
+		return
 			
     def iterate_Game(self):
 		
