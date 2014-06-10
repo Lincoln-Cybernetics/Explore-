@@ -61,13 +61,19 @@ class Game(object):
 				
 	#MAIN
     def main(self, screen):
+		
+		
+		#is the Game Over?
 		self.Game_Over = False
+		#why is the game over?
+		self.GOstr = ""
+		
 		#sprite groups
 		self.sprites = pygame.sprite.Group()
-		#self.unpassable = pygame.sprite.Group()
 		self.items = pygame.sprite.Group()
 		self.terrain = pygame.sprite.Group()
 		self.background = pygame.sprite.Group()
+		
 		#list of map tiles
 		self. maptiles = []
 		
@@ -117,6 +123,10 @@ class Game(object):
 					
 						
 			self.iterate_Game()
+		if self.GOstr == "SPACE":
+			print "You have walked off the edge of the world.  You are now doomed to spend eternity drifting in OUTER SPACE!"
+		if self.GOstr == "WIN":
+			print" You Win!  YAY!"
 		return
 			
     def iterate_Game(self):
