@@ -3,6 +3,7 @@ import random
 import player
 import landform
 import item
+import time
 
 class Game(object):
 	
@@ -39,22 +40,22 @@ class Game(object):
 			for b in range(self.mastery//self.tiley):
 				#basic map
 				if kind == 'Basic':
-					tertype = 'Plain'
+					tertype = 0
 					mygem.set_Index(5,5)
 					
 				#Random map
 				if kind == 'Random':
-					tertype = random.choice(self.landtype)
+					tertype = random.randrange(15)
 					mygem.set_Index(random.randrange(self.masterx//self.tilex), random.randrange(self.mastery//self.tiley))
 				
 				if a == self.player1.spawnx and b == self.player1.spawny:
-					tertype = 	'Plain'
+					tertype = 	0
 				plot = landform.Acre(self, self.terrain)
 				plot.set_Index(a,b)
 				plot. set_Biome(tertype)
 				maprow.append(plot)
 				self.background.add(plot)
-				if tertype == 'Whirlpool' or tertype == 'Ocean' or tertype == 'Active Volcano':
+				if plot.flavor == 'Whirlpool' or plot.flavor == 'Ocean' or plot.flavor == 'Active Volcano':
 					self.player1.unpassable.add(plot)
 			self.maptiles.append(maprow)
 		self.background.add(mygem)
@@ -91,7 +92,7 @@ class Game(object):
 		self.player1 = player.Player(self, self.sprites)
 		
 		#make a map
-		self.landtype = ['Plain', 'Hill', 'Scrub', 'Dunes', 'Gravel', 'Mountain', 'Extinct Volcano', 'Active Volcano', 'Shallows', 'Ocean', 'Whirlpool', 'Light Woods', 'Med Woods', 'Dense Woods']
+		#self.landtype = ['Plain', 'Plain Trees', 'Hill', 'Scrub', 'Dunes', 'Gravel', 'Mountain', 'Extinct Volcano', 'Active Volcano', 'Shallows', 'Ocean', 'Whirlpool', 'Light Woods', 'Med Woods', 'Dense Woods']
 		self.map_gen('Random')
 		
 		#spawn the player
@@ -126,6 +127,7 @@ class Game(object):
 		if self.GOstr == "SPACE":
 			print "You have walked off the edge of the world.  You are now doomed to spend eternity drifting in OUTER SPACE!"
 		if self.GOstr == "WIN":
+			time.sleep(2)
 			print" You Win!  YAY!"
 		return
 			
