@@ -118,8 +118,10 @@ class Player(pygame.sprite.Sprite):
 				
 		if newx < 0 or newx >= len(self.level.maptiles):
 			self.level.Game_Over = True	
+			self.level.GOstr = "SPACE"
 		elif newy < 0 or newy >= len(self.level.maptiles[newx]):
-			self.level.Game_Over = True		
+			self.level.Game_Over = True	
+			self.level.GOstr = "SPACE"				
 				
 		new = self.rect
 		if bgsig == 'NA':
@@ -158,6 +160,8 @@ class Player(pygame.sprite.Sprite):
 		for thing in pygame.sprite.spritecollide(self, self.level.items, True):
 			if thing.flavor == 'gem':
 				pygame.mixer.Sound('tadaa.wav').play()
+				self.level.Game_Over = True	
+				self.level.GOstr = "WIN"			
 				
 		
 	def update(self):
