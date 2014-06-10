@@ -12,58 +12,65 @@ class Acre(pygame.sprite.Sprite):
 		self.level = level
 		self.x = 0
 		self.y = 0
+		self.flavor = 'Plain'
+		self.flavor_saver = [ 'Plain', 'Plain with Trees', 'Hill', 'Scrub', 'Dunes', 'Gravel', 'Mountain',\
+			'Extinct Volcano', 'Active Volcano', 'Shallows', 'Ocean', 'Whirlpool',  'Light Woods', 'Medium Woods',\
+			'Dense Woods']
 		
 	def set_Biome(self, land):
+		self.flavor = self.flavor_saver[land]
+		land = self.flavor
 		if land == 'Plain':
 			xind = 0
 			yind = 0
-		if land == 'Hill':
+		elif land == 'Plain with Trees':
+			xind = 0
+			yind = 2
+		elif land == 'Hill':
 			xind = 0
 			yind = 1
-		if land == 'Scrub':
+		elif land == 'Scrub':
 			xind = 1
 			yind = 0
-		if land == 'Dunes':
+		elif land == 'Dunes':
 			xind = 1
 			yind = 1
-		if land == 'Gravel':
+		elif land == 'Gravel':
 			xind = 2
 			yind = 0
-		if land == 'Mountain':
+		elif land == 'Mountain':
 			xind = 2
 			yind = 1
-		if land == 'Extinct Volcano':
+		elif land == 'Extinct Volcano':
 			xind = 2
 			yind = 2
-		if land == 'Active Volcano':
+		elif land == 'Active Volcano':
 			xind = 2
 			yind = 3
-		if land == 'Shallows':
+		elif land == 'Shallows':
 			xind = 3
 			yind = 0
-		if land == 'Ocean':
+		elif land == 'Ocean':
 			xind = 3
 			yind = 1
-		if land == 'Whirlpool':
+		elif land == 'Whirlpool':
 			xind = 3
 			yind = 2
-		if land == 'Light Woods':
+		elif land == 'Light Woods':
 			xind = 4
 			yind = 0
-		if land == 'Med Woods':
+		elif land == 'Medium Woods':
 			xind = 4
 			yind = 1
-		if land == 'Dense Woods':
+		elif land == 'Dense Woods':
 			xind = 4
 			yind = 2
+		else:
+			xind = 0
+			yind = 0
 		self.animator.set_Img(xind, yind)
 		self.image = self.animator.get_Img().convert()
 		
-	def populate(self, img):
-		self.image.blit(img, (0,0), pygame.rect(0,0,100,100)).convert()
-		
-	def unpopulate(self):
-		self.image = animator.get_Img().convert()
 		
 	def set_Index(self, x, y):
 		self.x = x
@@ -77,3 +84,7 @@ class Acre(pygame.sprite.Sprite):
 		if axis == 'Y':
 			return self.y
 		return -1
+
+	def update(self):
+		pass
+		
