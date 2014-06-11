@@ -127,6 +127,11 @@ class Player(pygame.sprite.Sprite):
 						self.level.maptiles[self.indx][self.indy].set_Biome(tertyp[flava])
 						break	
 				
+		if cmd == "Plant":
+			if self.level.maptiles[self.indx][self.indy].flavor == "Plain":
+				self.level.maptiles[self.indx][self.indy].set_Biome(1)
+				
+				
 		if newx < 0 or newx >= len(self.level.maptiles):
 			self.level.Game_Over = True	
 			self.level.GOstr = "SPACE"
