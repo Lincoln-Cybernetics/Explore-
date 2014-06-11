@@ -1,6 +1,7 @@
 import pygame
 import ss
 
+
 class Player(pygame.sprite.Sprite):
 	def __init__(self, level, *groups):
 		super(Player, self).__init__(*groups)
@@ -22,6 +23,7 @@ class Player(pygame.sprite.Sprite):
 		self.indy = self.spawny
 		self.rect = pygame.rect.Rect((self.spawnx * self.level.tilex, self.spawny * self.level.tiley), self.image.get_size())#320,240
 		self.unpassable = pygame.sprite.Group()
+		self.inventory = { 'axe' : 0 }
 	
 	def spawn(self):
 		self.indx = self.spawnx
@@ -116,6 +118,15 @@ class Player(pygame.sprite.Sprite):
 				self.rect.x += self.level.tilex
 				self.rect.y += self.level.tiley
 				
+		if cmd == "CHOP":
+			terlab = ['Dense Woods', 'Medium Woods', 'Light Woods', 'Plain with Trees']
+			tertyp = {'Dense Woods': 13, 'Medium Woods': 12,  'Light Woods' : 1, 'Plain with Trees': 0}
+			if self.inventory['axe'] > 0:
+				for flava in terlab:
+					if self.level.maptiles[self.indx][self.indy].flavor == flava:
+						self.level.maptiles[self.indx][self.indy].set_Biome(tertyp[flava])
+						break	
+				
 		if newx < 0 or newx >= len(self.level.maptiles):
 			self.level.Game_Over = True	
 			self.level.GOstr = "SPACE"
@@ -161,7 +172,10 @@ class Player(pygame.sprite.Sprite):
 			if thing.flavor == 'gem':
 				pygame.mixer.Sound('tadaa.wav').play()
 				self.level.Game_Over = True	
-				self.level.GOstr = "WIN"			
+				self.level.GOstr = "WIN"	
+			elif thing.flavor == 'axe':		
+				self.inventory['axe'] += 1
+				
 				
 		
 	def update(self):
