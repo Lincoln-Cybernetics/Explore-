@@ -130,6 +130,8 @@ class Game(object):
 					self.player1.command("LR")	
 				if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
 					self.player1.command("CHOP")	
+				if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+					self.player1.command("Plant")
 						
 			self.iterate_Game()
 		if self.GOstr == "SPACE":
