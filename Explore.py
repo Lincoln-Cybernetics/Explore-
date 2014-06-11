@@ -34,7 +34,11 @@ class Game(object):
 			self.player1.set_spawn(random.randrange(self.masterx//self.tilex), random.randrange(self.mastery//self.tiley))
 				
 		
-		mygem = item.Item(self, self.items)
+		mygem = item.Item(self, 0, self.items)
+		#mygem.set_type(0)
+		myaxe = item.Item(self, 1, self.items)
+		#myaxe.set_type(1)
+		
 		for a in range(self.masterx//self.tilex):
 			maprow = []
 			for b in range(self.mastery//self.tiley):
@@ -42,12 +46,15 @@ class Game(object):
 				if kind == 'Basic':
 					tertype = 0
 					mygem.set_Index(5,5)
+					myaxe.set_Index(8,2)
 					
 				#Random map
 				if kind == 'Random':
 					tertype = random.randrange(15)
 					mygem.set_Index(random.randrange(self.masterx//self.tilex), random.randrange(self.mastery//self.tiley))
-				
+					myaxe.set_Index(random.randrange(self.masterx//self.tilex), random.randrange(self.mastery//self.tiley))
+					
+					
 				if a == self.player1.spawnx and b == self.player1.spawny:
 					tertype = 	0
 				plot = landform.Acre(self, self.terrain)
@@ -58,7 +65,7 @@ class Game(object):
 				if plot.flavor == 'Whirlpool' or plot.flavor == 'Ocean' or plot.flavor == 'Active Volcano':
 					self.player1.unpassable.add(plot)
 			self.maptiles.append(maprow)
-		self.background.add(mygem)
+		self.background.add(self.items)
 				
 	#MAIN
     def main(self, screen):
@@ -92,7 +99,7 @@ class Game(object):
 		self.player1 = player.Player(self, self.sprites)
 		
 		#make a map
-		#self.landtype = ['Plain', 'Plain Trees', 'Hill', 'Scrub', 'Dunes', 'Gravel', 'Mountain', 'Extinct Volcano', 'Active Volcano', 'Shallows', 'Ocean', 'Whirlpool', 'Light Woods', 'Med Woods', 'Dense Woods']
+		
 		self.map_gen('Random')
 		
 		#spawn the player
@@ -121,7 +128,8 @@ class Game(object):
 					self.player1.command("LL")	
 				if event.type == pygame.KEYDOWN and event.key == pygame.K_KP3:
 					self.player1.command("LR")	
-					
+				if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+					self.player1.command("CHOP")	
 						
 			self.iterate_Game()
 		if self.GOstr == "SPACE":
