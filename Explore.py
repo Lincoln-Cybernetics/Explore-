@@ -73,6 +73,8 @@ class Game(object):
 		
 		#is the Game Over?
 		self.Game_Over = False
+		self.end_turn = False
+		self.to_flag = False
 		#why is the game over?
 		self.GOstr = ""
 		
@@ -107,35 +109,64 @@ class Game(object):
 		
 		#main loop
 		while self.Game_Over == False:
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					return
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-					return
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_KP8:
-					self.player1.command("U")
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_KP2:
-					self.player1.command("D")
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_KP4:
-					self.player1.command("L")
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_KP6:
-					self.player1.command("R")	
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_KP7:
-					self.player1.command("UL")	
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_KP9:
-					self.player1.command("UR")	
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_KP1:
-					self.player1.command("LL")	
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_KP3:
-					self.player1.command("LR")	
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
-					self.player1.command("CHOP")	
-				if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-					self.player1.command("Plant")
+			self.end_turn = False
+			self.to_flag = False
+			self.player1.AP_c = self.player1.AP_max
+			while self.end_turn == False:
+				
+				for event in pygame.event.get():
+					if event.type == pygame.QUIT:
+						return
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+						return
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_KP8:
+						self.player1.command("U")
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_KP2:
+						self.player1.command("D")
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_KP4:
+						self.player1.command("L")
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_KP6:
+						self.player1.command("R")	
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_KP7:
+						self.player1.command("UL")	
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_KP9:
+						self.player1.command("UR")	
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_KP1:
+						self.player1.command("LL")	
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_KP3:
+						self.player1.command("LR")	
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+						self.player1.command("CHOP")	
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+						self.player1.command("Plant")
+						
+				self.iterate_Game()
+			
+			while self.to_flag	== False:
+				if self.Game_Over:
+					break
+				# Display some text
+				font = pygame.font.Font(None, 64)
+				text = font.render("Turn Over", 1, (255, 10, 10))
+				#textpos = text.get_rect()
+				#textpos.centerx = background.get_rect().centerx
+				#background.blit(text, textpos)
+
+				# Blit everything to the screen
+				screen.blit(text, (mainx/2, mainy/2))
+				pygame.display.flip()
+				for event in pygame.event.get():
+					if event.type == pygame.QUIT:
+						return
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+						return
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+						self.to_flag = True
 						
 			self.iterate_Game()
+			
 		if self.GOstr == "SPACE":
-			print "You have walked off the edge of the world.  You are now doomed to spend eternity drifting in OUTER SPACE!"
+			print "You have walked off the edge of the world.\nYou are now doomed to spend eternity drifting in OUTER SPACE!"
 		if self.GOstr == "WIN":
 			time.sleep(2)
 			print" You Win!  YAY!"
