@@ -5,25 +5,32 @@ import ss
 class Player(pygame.sprite.Sprite):
 	def __init__(self, level, *groups):
 		super(Player, self).__init__(*groups)
+		#the game level
 		self.level = level
+		#load images
 		self.sheet = pygame.image.load('exp100.png').convert()
 		self.animator = ss.Cutout(self.sheet, 100, 100)
 		self.animator.set_Img(7,2)
 		self.Rimg = self.animator.get_Img().convert()
 		self.Rimg.set_colorkey((255,0,0))
-		#self.Rimg = pygame.image.load('RangerDanR.png')
+		
 		self.animator.set_Img(7,3)
 		self.Limg = self.animator.get_Img().convert()
 		self.Limg.set_colorkey((255,0,0))
-		#self.Limg = pygame.image.load('RangerDanL.png')
+		
 		self.image = self.Rimg
+		#player spawn point/location
 		self.spawnx = 1
 		self.spawny = 1
 		self.indx = self.spawnx
 		self.indy = self.spawny
 		self.rect = pygame.rect.Rect((self.spawnx * self.level.tilex, self.spawny * self.level.tiley), self.image.get_size())#320,240
+		#terrain/item interaction
 		self.unpassable = pygame.sprite.Group()
+		#player stats
 		self.inventory = { 'axe' : 0 }
+		self.AP_max = 3
+		self.AP_c = 3
 	
 	def spawn(self):
 		self.indx = self.spawnx
@@ -41,6 +48,7 @@ class Player(pygame.sprite.Sprite):
 		newy = self.indy
 		#move up
 		if cmd == "U":
+			self.AP_c -= 1
 			newy -= 1
 			if self.rect.y <= self.level.tiley:
 				bgsig = "D"
@@ -49,6 +57,7 @@ class Player(pygame.sprite.Sprite):
 				self.rect.y -= self.level.tiley
 		#move down
 		if cmd == "D":
+			self.AP_c -= 1
 			newy += 1
 			if self.rect.y >= self.level.mastery - (2* self.level.tiley):
 				bgsig = "U"
@@ -57,6 +66,7 @@ class Player(pygame.sprite.Sprite):
 				self.rect.y += self.level.tiley
 		# move left
 		if cmd == "L":
+			self.AP_c -= 1
 			newx -= 1
 			self.image = self.Limg
 			if self.rect.x <= self.level.tilex:
@@ -66,6 +76,7 @@ class Player(pygame.sprite.Sprite):
 				self.rect.x -= self.level.tilex
 		#move up and left 
 		if cmd == "UL":
+			self.AP_c -= 2
 			newx -= 1
 			newy -= 1
 			self.image = self.Limg
@@ -77,6 +88,7 @@ class Player(pygame.sprite.Sprite):
 				self.rect.y -= self.level.tiley		
 		#move down and left
 		if cmd == "LL":
+			self.AP_c -= 2
 			newx -= 1
 			newy += 1
 			self.image = self.Limg
@@ -88,6 +100,7 @@ class Player(pygame.sprite.Sprite):
 				self.rect.y += self.level.tiley
 		#move right
 		if cmd == "R":
+			self.AP_c -= 1
 			newx += 1
 			self.image = self.Rimg
 			if self.rect.x >= self.level.masterx - (2 * self.level.tiley):
@@ -97,6 +110,7 @@ class Player(pygame.sprite.Sprite):
 				self.rect.x += self.level.tilex
 		#move up and right
 		if cmd == "UR":
+			self.AP_c -= 2
 			newx += 1
 			newy -= 1
 			self.image = self.Rimg
@@ -108,6 +122,7 @@ class Player(pygame.sprite.Sprite):
 				self.rect.y -= self.level.tiley
 		#move down and right
 		if cmd == "LR":
+			self.AP_c -= 2
 			newx += 1
 			newy += 1
 			self.image = self.Rimg
@@ -119,6 +134,7 @@ class Player(pygame.sprite.Sprite):
 				self.rect.y += self.level.tiley
 				
 		if cmd == "CHOP":
+			self.AP_c = 0
 			terlab = ['Dense Woods', 'Medium Woods', 'Light Woods', 'Plain with Trees']
 			tertyp = {'Dense Woods': 13, 'Medium Woods': 12,  'Light Woods' : 1, 'Plain with Trees': 0}
 			if self.inventory['axe'] > 0:
@@ -128,6 +144,7 @@ class Player(pygame.sprite.Sprite):
 						break	
 				
 		if cmd == "Plant":
+			self.AP_c = 0
 			if self.level.maptiles[self.indx][self.indy].flavor == "Plain":
 				self.level.maptiles[self.indx][self.indy].set_Biome(1)
 				
@@ -180,7 +197,10 @@ class Player(pygame.sprite.Sprite):
 				self.level.GOstr = "WIN"	
 			elif thing.flavor == 'axe':		
 				self.inventory['axe'] += 1
-				
+		
+		if self.AP_c < 1:
+			#if self.level.Game_Over == False:
+			self.level.end_turn = True		
 				
 		
 	def update(self):
