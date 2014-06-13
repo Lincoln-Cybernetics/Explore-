@@ -28,9 +28,15 @@ class Player(pygame.sprite.Sprite):
 		#terrain/item interaction
 		self.unpassable = pygame.sprite.Group()
 		#player stats
+		self.name = "Ranger Dan"
 		self.inventory = { 'axe' : 0 }
 		self.AP_max = 3
 		self.AP_c = 3
+		self.HP_max = 10
+		self.HP_c = 10
+		self.Att = 5
+		self.Def = 5
+		
 	
 	def spawn(self):
 		self.indx = self.spawnx
@@ -46,107 +52,107 @@ class Player(pygame.sprite.Sprite):
 		bgsig = 'NA'
 		newx = self.indx
 		newy = self.indy
+		
 		#move up
 		if cmd == "U":
-			self.AP_c -= 1
-			newy -= 1
-			if self.rect.y <= self.level.tiley:
-				bgsig = "D"
-				#self.level.move_BG("D")
-			else:
-				self.rect.y -= self.level.tiley
+			if self.reckonAP(1):
+				newy -= 1
+				if self.rect.y <= self.level.tiley:
+					bgsig = "D"
+				else:
+					self.rect.y -= self.level.tiley
+					
 		#move down
 		if cmd == "D":
-			self.AP_c -= 1
-			newy += 1
-			if self.rect.y >= self.level.mastery - (2* self.level.tiley):
-				bgsig = "U"
-				#self.level.move_BG("U")
-			else:
-				self.rect.y += self.level.tiley
+			if self.reckonAP(1):
+				newy += 1
+				if self.rect.y >= self.level.mastery - (2* self.level.tiley):
+					bgsig = "U"
+				else:
+					self.rect.y += self.level.tiley
+					
 		# move left
 		if cmd == "L":
-			self.AP_c -= 1
-			newx -= 1
-			self.image = self.Limg
-			if self.rect.x <= self.level.tilex:
-				bgsig = "R"
-				#self.level.move_BG("R")
-			else:
-				self.rect.x -= self.level.tilex
+			if self.reckonAP(1):
+				newx -= 1
+				self.image = self.Limg
+				if self.rect.x <= self.level.tilex:
+					bgsig = "R"
+				else:
+					self.rect.x -= self.level.tilex
+					
 		#move up and left 
 		if cmd == "UL":
-			self.AP_c -= 2
-			newx -= 1
-			newy -= 1
-			self.image = self.Limg
-			if self.rect.x <= self.level.tilex or self.rect.y <= self.level.tiley:
-				bgsig = "LR"
-				#self.level.move_BG("LR")
-			else:
-				self.rect.x -=  self.level.tilex
-				self.rect.y -= self.level.tiley		
+			if self.reckonAP(2):
+				newx -= 1
+				newy -= 1
+				self.image = self.Limg
+				if self.rect.x <= self.level.tilex or self.rect.y <= self.level.tiley:
+					bgsig = "LR"
+				else:
+					self.rect.x -=  self.level.tilex
+					self.rect.y -= self.level.tiley	
+						
 		#move down and left
 		if cmd == "LL":
-			self.AP_c -= 2
-			newx -= 1
-			newy += 1
-			self.image = self.Limg
-			if self.rect.x <= self.level.tilex or self.rect.y >= self.level.mastery - 2*self.level.tiley:
-				bgsig = "UR"
-				#self.level.move_BG("UR")
-			else:
-				self.rect.x -= self.level.tilex
-				self.rect.y += self.level.tiley
+			if self.reckonAP(2):
+				newx -= 1
+				newy += 1
+				self.image = self.Limg
+				if self.rect.x <= self.level.tilex or self.rect.y >= self.level.mastery - 2*self.level.tiley:
+					bgsig = "UR"
+				else:
+					self.rect.x -= self.level.tilex
+					self.rect.y += self.level.tiley
+					
 		#move right
 		if cmd == "R":
-			self.AP_c -= 1
-			newx += 1
-			self.image = self.Rimg
-			if self.rect.x >= self.level.masterx - (2 * self.level.tiley):
-				bgsig = "L"
-				#self.level.move_BG("L")
-			else:
-				self.rect.x += self.level.tilex
+			if self.reckonAP(1):
+				newx += 1
+				self.image = self.Rimg
+				if self.rect.x >= self.level.masterx - (2 * self.level.tiley):
+					bgsig = "L"
+				else:
+					self.rect.x += self.level.tilex
+					
 		#move up and right
 		if cmd == "UR":
-			self.AP_c -= 2
-			newx += 1
-			newy -= 1
-			self.image = self.Rimg
-			if self.rect.x >= self.level.masterx - (2* self.level.tilex) or self.rect.y <= self.level.tiley:
-				bgsig = "LL"
-				#self.level.move_BG("LL")
-			else:
-				self.rect.x += self.level.tilex
-				self.rect.y -= self.level.tiley
+			if self.reckonAP(2):
+				newx += 1
+				newy -= 1
+				self.image = self.Rimg
+				if self.rect.x >= self.level.masterx - (2* self.level.tilex) or self.rect.y <= self.level.tiley:
+					bgsig = "LL"
+				else:
+					self.rect.x += self.level.tilex
+					self.rect.y -= self.level.tiley
+					
 		#move down and right
 		if cmd == "LR":
-			self.AP_c -= 2
-			newx += 1
-			newy += 1
-			self.image = self.Rimg
-			if self.rect.x >= self.level.masterx - (2*self.level.tilex) or self.rect.y >= self.level.mastery - 2*self.level.tiley:
-				bgsig = "UL"
-				#self.level.move_BG("UL")
-			else:
-				self.rect.x += self.level.tilex
-				self.rect.y += self.level.tiley
+			if self.reckonAP(2):
+				newx += 1
+				newy += 1
+				self.image = self.Rimg
+				if self.rect.x >= self.level.masterx - (2*self.level.tilex) or self.rect.y >= self.level.mastery - 2*self.level.tiley:
+					bgsig = "UL"
+				else:
+					self.rect.x += self.level.tilex
+					self.rect.y += self.level.tiley
 				
 		if cmd == "CHOP":
-			self.AP_c = 0
-			terlab = ['Dense Woods', 'Medium Woods', 'Light Woods', 'Plain with Trees']
-			tertyp = {'Dense Woods': 13, 'Medium Woods': 12,  'Light Woods' : 1, 'Plain with Trees': 0}
-			if self.inventory['axe'] > 0:
-				for flava in terlab:
-					if self.level.maptiles[self.indx][self.indy].flavor == flava:
-						self.level.maptiles[self.indx][self.indy].set_Biome(tertyp[flava])
-						break	
+			if self.reckonAP(3):
+				terlab = ['Dense Woods', 'Medium Woods', 'Light Woods', 'Plain with Trees']
+				tertyp = {'Dense Woods': 13, 'Medium Woods': 12,  'Light Woods' : 1, 'Plain with Trees': 0}
+				if self.inventory['axe'] > 0:
+					for flava in terlab:
+						if self.level.maptiles[self.indx][self.indy].flavor == flava:
+							self.level.maptiles[self.indx][self.indy].set_Biome(tertyp[flava])
+							break	
 				
 		if cmd == "Plant":
-			self.AP_c = 0
-			if self.level.maptiles[self.indx][self.indy].flavor == "Plain":
-				self.level.maptiles[self.indx][self.indy].set_Biome(1)
+			if self.reckonAP(3):
+				if self.level.maptiles[self.indx][self.indy].flavor == "Plain":
+					self.level.maptiles[self.indx][self.indy].set_Biome(1)
 				
 				
 		if newx < 0 or newx >= len(self.level.maptiles):
@@ -199,12 +205,17 @@ class Player(pygame.sprite.Sprite):
 				self.inventory['axe'] += 1
 		
 		if self.AP_c < 1:
-			#if self.level.Game_Over == False:
 			self.level.end_turn = True		
 				
 		
 	def update(self):
 		pass
-		
+	
+	def reckonAP(self, cost):
+		if self.AP_c >= cost:
+			self.AP_c -= cost
+			return True
+		else:
+			return False	
 		
 		
