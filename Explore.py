@@ -119,6 +119,8 @@ class Game(object):
 						return
 					if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
 						return
+					if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+						self.end_turn = True
 					if event.type == pygame.KEYDOWN and event.key == pygame.K_KP8:
 						self.player1.command("U")
 					if event.type == pygame.KEYDOWN and event.key == pygame.K_KP2:
@@ -141,17 +143,16 @@ class Game(object):
 						self.player1.command("Plant")
 						
 				self.iterate_Game()
-			
+				if self.Game_Over:
+					break
+					
+					
 			while self.to_flag	== False:
 				if self.Game_Over:
 					break
 				# Display some text
 				font = pygame.font.Font(None, 64)
 				text = font.render("Turn Over", 1, (255, 10, 10))
-				#textpos = text.get_rect()
-				#textpos.centerx = background.get_rect().centerx
-				#background.blit(text, textpos)
-
 				# Blit everything to the screen
 				screen.blit(text, (mainx/2, mainy/2))
 				pygame.display.flip()
