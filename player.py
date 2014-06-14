@@ -36,7 +36,7 @@ class Player(pygame.sprite.Sprite):
 		self.HP_c = 10
 		self.Att = 5
 		self.Def = 5
-		
+		self.Att_Dam = 2
 	
 	def spawn(self):
 		self.indx = self.spawnx
@@ -161,11 +161,17 @@ class Player(pygame.sprite.Sprite):
 		elif newy < 0 or newy >= len(self.level.maptiles[newx]):
 			self.level.Game_Over = True	
 			self.level.GOstr = "SPACE"				
+		
+		for badguy in pygame.sprite.spritecollide(self, self.level.baddies, False):
+			self.fight(badguy)
+			#if badguy.Alive == True:
+			#	self.rect = prev
 				
 		new = self.rect
 		if bgsig == 'NA':
 			xsig = True
 			ysig = True
+			
 			for loc in pygame.sprite.spritecollide(self, self.unpassable, False):
 				loc = loc.rect
 				
@@ -203,6 +209,8 @@ class Player(pygame.sprite.Sprite):
 				self.level.GOstr = "WIN"	
 			elif thing.flavor == 'axe':		
 				self.inventory['axe'] += 1
+				
+
 		
 		if self.AP_c < 1:
 			self.level.end_turn = True		
@@ -218,4 +226,13 @@ class Player(pygame.sprite.Sprite):
 		else:
 			return False	
 		
+	def damage(self, dmg):
+		self.HP_c -= dmg
+		if self.HP_c < 1:
+			self.level.Game_Over = False
+			self.level.GOstr = "Dead"	
 		
+	def fight(self, opponent):
+		if self.Att > opponent.Def:
+			opponent.damage(self.Att_Dam)
+	
