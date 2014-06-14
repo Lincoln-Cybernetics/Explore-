@@ -4,6 +4,7 @@ import player
 import landform
 import item
 import time
+import Mob
 
 class Game(object):
 	
@@ -38,6 +39,7 @@ class Game(object):
 		#mygem.set_type(0)
 		myaxe = item.Item(self, 1, self.items)
 		#myaxe.set_type(1)
+		dude = Mob.Mob(self, self.baddies)
 		
 		for a in range(self.masterx//self.tilex):
 			maprow = []
@@ -47,13 +49,16 @@ class Game(object):
 					tertype = 0
 					mygem.set_Index(5,5)
 					myaxe.set_Index(8,2)
+					dude.set_spawn(2,6)
+					dude.spawn()
 					
 				#Random map
 				if kind == 'Random':
 					tertype = random.randrange(15)
 					mygem.set_Index(random.randrange(self.masterx//self.tilex), random.randrange(self.mastery//self.tiley))
 					myaxe.set_Index(random.randrange(self.masterx//self.tilex), random.randrange(self.mastery//self.tiley))
-					
+					dude.set_spawn(random.randrange(self.masterx//self.tilex), random.randrange(self.mastery//self.tiley))
+					dude.spawn()
 					
 				if a == self.player1.spawnx and b == self.player1.spawny:
 					tertype = 	0
@@ -66,6 +71,8 @@ class Game(object):
 					self.player1.unpassable.add(plot)
 			self.maptiles.append(maprow)
 		self.background.add(self.items)
+		self.background.add(self.baddies)
+		self.player1.unpassable.add(self.baddies)
 				
 	#MAIN
     def main(self, screen):
@@ -83,6 +90,7 @@ class Game(object):
 		self.items = pygame.sprite.Group()
 		self.terrain = pygame.sprite.Group()
 		self.background = pygame.sprite.Group()
+		self.baddies = pygame.sprite.Group()
 		
 		#list of map tiles
 		self. maptiles = []
@@ -102,7 +110,7 @@ class Game(object):
 		
 		#make a map
 		
-		self.map_gen('Random')
+		self.map_gen('Basic')
 		
 		#spawn the player
 		self.player1.spawn()
@@ -142,6 +150,9 @@ class Game(object):
 					if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
 						self.player1.command("Plant")
 						
+				for badguy in self.baddies:
+					if badguy.Alive == False:
+						badguy.kill()		
 				self.iterate_Game()
 				if self.Game_Over:
 					break
@@ -152,18 +163,22 @@ class Game(object):
 					break
 				# Display some text
 				font = pygame.font.Font(None, 64)
-				text = font.render("Turn Over", 1, (255, 10, 10))
+				text = font.render("Turn Over", 1, (255, 10, 10), (0,0,255))
 				# Blit everything to the screen
-				screen.blit(text, (mainx/2, mainy/2))
+				screen.blit(text, (mainx/2-self.tilex, mainy/2-self.tiley))
 				pygame.display.flip()
 				for event in pygame.event.get():
 					if event.type == pygame.QUIT:
 						return
 					if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
 						return
-					if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+					if event.type == pygame.KEYDOWN and (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER):
 						self.to_flag = True
-						
+			
+			for badguy in self.baddies:
+				badguy.take_turn()
+				if badguy.Alive == False:
+					badguy.kill()			
 			self.iterate_Game()
 			
 		if self.GOstr == "SPACE":
@@ -171,6 +186,8 @@ class Game(object):
 		if self.GOstr == "WIN":
 			time.sleep(2)
 			print" You Win!  YAY!"
+		if self.GOstr == "Dead":
+			print"Tried and Died."
 		return
 			
     def iterate_Game(self):
@@ -182,6 +199,7 @@ class Game(object):
 		
 		self.terrain.draw(screen)
 		self.items.draw(screen)
+		self.baddies.draw(screen)
 		self.sprites.draw(screen)
 	
 		pygame.display.flip()
