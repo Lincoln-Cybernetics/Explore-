@@ -1,5 +1,6 @@
 import pygame
 import ss
+import random
 
 
 class Mob(pygame.sprite.Sprite):
@@ -29,12 +30,15 @@ class Mob(pygame.sprite.Sprite):
 		self.AP_c = 3
 		self.HP_max = 10
 		self.HP_c = 10
-		self.Att = 1
-		self.Def = 1
-		self.Att_Dam = 0
+		self.Att = 5
+		self.Def = 5
+		self.Att_Dam = 2
 		self.Alive = True
 		self.end_turn = False
+		self.flavor = "Static"
 		
+	def set_type(self, flavor):
+		self.flavor = flavor
 	
 	def spawn(self):
 		self.indx = self.spawnx
@@ -47,95 +51,66 @@ class Mob(pygame.sprite.Sprite):
 		
 	def command(self, cmd):
 		prev = self.rect.copy()
-		bgsig = 'NA'
+		
 		newx = self.indx
 		newy = self.indy
+		#print cmd, self.indx, self.indy
 		
 		#move up
 		if cmd == "U":
 			if self.reckonAP(1):
 				newy -= 1
-				if self.rect.y <= self.level.tiley:
-					pass#bgsig = "D"
-				else:
-					self.rect.y -= self.level.tiley
+				self.rect.y -= self.level.tiley
 					
 		#move down
 		if cmd == "D":
 			if self.reckonAP(1):
 				newy += 1
-				if self.rect.y >= self.level.mastery - (2* self.level.tiley):
-					pass#bgsig = "U"
-				else:
-					self.rect.y += self.level.tiley
+				self.rect.y += self.level.tiley
 					
 		# move left
 		if cmd == "L":
 			if self.reckonAP(1):
 				newx -= 1
-				
-				if self.rect.x <= self.level.tilex:
-					pass#bgsig = "R"
-				else:
-					self.rect.x -= self.level.tilex
+				self.rect.x -= self.level.tilex
 					
 		#move up and left 
 		if cmd == "UL":
 			if self.reckonAP(2):
 				newx -= 1
 				newy -= 1
-				
-				if self.rect.x <= self.level.tilex or self.rect.y <= self.level.tiley:
-					pass#bgsig = "LR"
-				else:
-					self.rect.x -=  self.level.tilex
-					self.rect.y -= self.level.tiley	
+				self.rect.x -=  self.level.tilex
+				self.rect.y -= self.level.tiley	
 						
 		#move down and left
 		if cmd == "LL":
 			if self.reckonAP(2):
 				newx -= 1
 				newy += 1
-				
-				if self.rect.x <= self.level.tilex or self.rect.y >= self.level.mastery - 2*self.level.tiley:
-					pass#bgsig = "UR"
-				else:
-					self.rect.x -= self.level.tilex
-					self.rect.y += self.level.tiley
+				self.rect.x -= self.level.tilex
+				self.rect.y += self.level.tiley
 					
 		#move right
 		if cmd == "R":
 			if self.reckonAP(1):
 				newx += 1
-				
-				if self.rect.x >= self.level.masterx - (2 * self.level.tiley):
-					pass#bgsig = "L"
-				else:
-					self.rect.x += self.level.tilex
+				self.rect.x += self.level.tilex
 					
 		#move up and right
 		if cmd == "UR":
 			if self.reckonAP(2):
 				newx += 1
 				newy -= 1
-				
-				if self.rect.x >= self.level.masterx - (2* self.level.tilex) or self.rect.y <= self.level.tiley:
-					pass#bgsig = "LL"
-				else:
-					self.rect.x += self.level.tilex
-					self.rect.y -= self.level.tiley
+				self.rect.x += self.level.tilex
+				self.rect.y -= self.level.tiley
 					
 		#move down and right
 		if cmd == "LR":
 			if self.reckonAP(2):
 				newx += 1
 				newy += 1
-				
-				if self.rect.x >= self.level.masterx - (2*self.level.tilex) or self.rect.y >= self.level.mastery - 2*self.level.tiley:
-					pass#bgsig = "UL"
-				else:
-					self.rect.x += self.level.tilex
-					self.rect.y += self.level.tiley
+				self.rect.x += self.level.tilex
+				self.rect.y += self.level.tiley
 				
 		if cmd == "CHOP":
 			if self.reckonAP(3):
@@ -152,54 +127,51 @@ class Mob(pygame.sprite.Sprite):
 				if self.level.maptiles[self.indx][self.indy].flavor == "Plain":
 					self.level.maptiles[self.indx][self.indy].set_Biome(1)
 				
-				
+		#print self.indx, self.indy, newx, newy		
 		if newx < 0 or newx >= len(self.level.maptiles):
 			self.Alive = False	
 			
 		elif newy < 0 or newy >= len(self.level.maptiles[newx]):
 			self.Alive = False	
-					
-				
-		new = self.rect
-		if bgsig == 'NA':
-			xsig = True
-			ysig = True
-			for loc in pygame.sprite.spritecollide(self, self.unpassable, False):
-				loc = loc.rect
-				
-				if prev.right <= loc.left and new.right > loc.left:
-					new.right = loc.left
-					xsig = False
-				if prev.left >= loc.right and new.left < loc.right:
-					new.left = loc.right
-					xsig = False
-				if prev.bottom <= loc.top and new.bottom > loc.top:
-					new.bottom = loc.top
-					ysig = False
-				if prev.top >= loc.bottom and new.top < loc.bottom:
-					new.top = loc.bottom
-					ysig = False
-			if xsig:
-				self.indx = newx
-			if ysig:
-				self.indy = newy
-				
 		
-		elif self.Alive == True:
 			
-			if self.level.maptiles[newx][newy] in self.unpassable:
+		for mob in pygame.sprite.spritecollide(self, self.level.mobs, False):
+			if mob == self:
 				pass
 			else:
-				self.level.move_BG(bgsig)
-				self.indx = newx
-				self.indy = newy
+				self.fight(mob)			
+				
+		new = self.rect
+		
+		xsig = True
+		ysig = True
+		for loc in pygame.sprite.spritecollide(self, self.unpassable, False):
+			loc = loc.rect
+				
+			if prev.right <= loc.left and new.right > loc.left:
+				new.right = loc.left
+				xsig = False
+			if prev.left >= loc.right and new.left < loc.right:
+				new.left = loc.right
+				xsig = False
+			if prev.bottom <= loc.top and new.bottom > loc.top:
+				new.bottom = loc.top
+				ysig = False
+			if prev.top >= loc.bottom and new.top < loc.bottom:
+				new.top = loc.bottom
+				ysig = False
+		if xsig:
+			self.indx = newx
+		if ysig:
+			self.indy = newy
+				
+		
+		
 				
 		for thing in pygame.sprite.spritecollide(self, self.level.items, False):
 			if thing.flavor == 'gem':
 				pass
-				#pygame.mixer.Sound('tadaa.wav').play()
-				#self.level.Game_Over = True	
-				#self.level.GOstr = "WIN"	
+				
 			elif thing.flavor == 'axe':
 				pass		
 				#self.inventory['axe'] += 1
@@ -221,14 +193,29 @@ class Mob(pygame.sprite.Sprite):
 	def damage(self, dmg):
 		self.HP_c -= dmg
 		if self.HP_c < 1:
-			self.Alive = False	
+			self.Alive = False
+				
 		
 	def fight(self, opponent):
-		if self.Att > opponent.Def:
+		attval = self.Att = random.randrange(10)
+		if attval > opponent.Def:
 			opponent.damage(self.Att_Dam)
 			
 	def take_turn(self):
-		pass
+		if self.flavor == "Static":
+			pass
+		else:	
+			while self.AP_c > 0:
+				if self.flavor == "Charger":
+					
+					if self.indx < self.level.player1.indx and self.AP_c > 0:
+						self.command("R")
+					if self.indy < self.level.player1.indy and self.AP_c > 0:
+						self.command("D")
+					if self.indx > self.level.player1.indx and self.AP_c > 0:
+						self.command("L")
+					if self.indy > self.level.player1.indy and self.AP_c > 0:
+						self.command("U")
 	
 	def set_Index(self, x, y):
 		self.indx = x
