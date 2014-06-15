@@ -51,6 +51,7 @@ class Game(object):
 					myaxe.set_Index(8,2)
 					dude.set_spawn(2,6)
 					dude.spawn()
+					dude.set_type("Charger")
 					
 				#Random map
 				if kind == 'Random':
@@ -72,7 +73,11 @@ class Game(object):
 			self.maptiles.append(maprow)
 		self.background.add(self.items)
 		self.background.add(self.baddies)
+		self.mobs.add(self.baddies)
+		self.mobs.add(self.player1)
 		self.player1.unpassable.add(self.baddies)
+		for badguy in self.baddies:
+			badguy.unpassable.add(self.player1)
 				
 	#MAIN
     def main(self, screen):
@@ -91,6 +96,8 @@ class Game(object):
 		self.terrain = pygame.sprite.Group()
 		self.background = pygame.sprite.Group()
 		self.baddies = pygame.sprite.Group()
+		self.mobs = pygame.sprite.Group()
+		
 		
 		#list of map tiles
 		self. maptiles = []
@@ -119,7 +126,8 @@ class Game(object):
 		while self.Game_Over == False:
 			self.end_turn = False
 			self.to_flag = False
-			self.player1.AP_c = self.player1.AP_max
+			for mob in self.mobs:
+				mob.AP_c = mob.AP_max
 			while self.end_turn == False:
 				
 				for event in pygame.event.get():
@@ -175,11 +183,14 @@ class Game(object):
 					if event.type == pygame.KEYDOWN and (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER):
 						self.to_flag = True
 			
-			for badguy in self.baddies:
-				badguy.take_turn()
-				if badguy.Alive == False:
-					badguy.kill()			
-			self.iterate_Game()
+			if self.Game_Over:
+				pass
+			else:
+				for badguy in self.baddies:
+					badguy.take_turn()
+					if badguy.Alive == False:
+						badguy.kill()			
+				self.iterate_Game()
 			
 		if self.GOstr == "SPACE":
 			print "You have walked off the edge of the world.\nYou are now doomed to spend eternity drifting in OUTER SPACE!"
