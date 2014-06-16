@@ -1,238 +1,155 @@
 import pygame
-import ss
-
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self, level, *groups):
 		super(Player, self).__init__(*groups)
 		#the game level
 		self.level = level
-		#load images
-		self.sheet = pygame.image.load('exp100.png').convert()
-		self.animator = ss.Cutout(self.sheet, 100, 100)
-		self.animator.set_Img(7,2)
-		self.Rimg = self.animator.get_Img().convert()
-		self.Rimg.set_colorkey((255,0,0))
+		#base image
+		self.set_Image('R')
+		self.scrnx = 0
+		self.mapx = 0
+		self.scrny = 0
+		self.mapy = 0
+		#item inventory
+		self.inventory = {'axe': 0}
 		
-		self.animator.set_Img(7,3)
-		self.Limg = self.animator.get_Img().convert()
-		self.Limg.set_colorkey((255,0,0))
-		
-		self.image = self.Rimg
-		#player spawn point/location
-		self.spawnx = 1
-		self.spawny = 1
-		self.indx = self.spawnx
-		self.indy = self.spawny
-		self.rect = pygame.rect.Rect((self.spawnx * self.level.tilex, self.spawny * self.level.tiley), self.image.get_size())#320,240
-		#terrain/item interaction
-		self.unpassable = pygame.sprite.Group()
 		#player stats
-		self.name = "Ranger Dan"
-		self.inventory = { 'axe' : 0 }
-		self.AP_max = 3
-		self.AP_c = 3
-		self.HP_max = 10
-		self.HP_c = 10
-		self.Att = 5
-		self.Def = 5
-		self.Att_Dam = 2
-	
-	def spawn(self):
-		self.indx = self.spawnx
-		self.indy = self.spawny
-		self.rect = pygame.rect.Rect((self.spawnx * self.level.tilex, self.spawny * self.level.tiley), self.image.get_size())	
+		self.visibility = 1
+		self.AP_max = 4
+		self.AP_c = 4
+		self.APcost = {"U": 1, "D": 1, "L": 1, "R": 1, "UL":2, "UR": 2, "LL": 2, "LR":2, "Chop":3, "Plant": 3}
 		
-	def set_spawn(self, x, y):
-		self.spawnx = x
-		self.spawny = y
-		
-	def command(self, cmd):
-		prev = self.rect.copy()
-		bgsig = 'NA'
-		newx = self.indx
-		newy = self.indy
-		
-		#move up
-		if cmd == "U":
-			if self.reckonAP(1):
-				newy -= 1
-				if self.rect.y <= self.level.tiley:
-					bgsig = "D"
-				else:
-					self.rect.y -= self.level.tiley
-					
-		#move down
-		if cmd == "D":
-			if self.reckonAP(1):
-				newy += 1
-				if self.rect.y >= self.level.mastery - (2* self.level.tiley):
-					bgsig = "U"
-				else:
-					self.rect.y += self.level.tiley
-					
-		# move left
-		if cmd == "L":
-			if self.reckonAP(1):
-				newx -= 1
-				self.image = self.Limg
-				if self.rect.x <= self.level.tilex:
-					bgsig = "R"
-				else:
-					self.rect.x -= self.level.tilex
-					
-		#move up and left 
-		if cmd == "UL":
-			if self.reckonAP(2):
-				newx -= 1
-				newy -= 1
-				self.image = self.Limg
-				if self.rect.x <= self.level.tilex or self.rect.y <= self.level.tiley:
-					bgsig = "LR"
-				else:
-					self.rect.x -=  self.level.tilex
-					self.rect.y -= self.level.tiley	
-						
-		#move down and left
-		if cmd == "LL":
-			if self.reckonAP(2):
-				newx -= 1
-				newy += 1
-				self.image = self.Limg
-				if self.rect.x <= self.level.tilex or self.rect.y >= self.level.mastery - 2*self.level.tiley:
-					bgsig = "UR"
-				else:
-					self.rect.x -= self.level.tilex
-					self.rect.y += self.level.tiley
-					
-		#move right
-		if cmd == "R":
-			if self.reckonAP(1):
-				newx += 1
-				self.image = self.Rimg
-				if self.rect.x >= self.level.masterx - (2 * self.level.tiley):
-					bgsig = "L"
-				else:
-					self.rect.x += self.level.tilex
-					
-		#move up and right
-		if cmd == "UR":
-			if self.reckonAP(2):
-				newx += 1
-				newy -= 1
-				self.image = self.Rimg
-				if self.rect.x >= self.level.masterx - (2* self.level.tilex) or self.rect.y <= self.level.tiley:
-					bgsig = "LL"
-				else:
-					self.rect.x += self.level.tilex
-					self.rect.y -= self.level.tiley
-					
-		#move down and right
-		if cmd == "LR":
-			if self.reckonAP(2):
-				newx += 1
-				newy += 1
-				self.image = self.Rimg
-				if self.rect.x >= self.level.masterx - (2*self.level.tilex) or self.rect.y >= self.level.mastery - 2*self.level.tiley:
-					bgsig = "UL"
-				else:
-					self.rect.x += self.level.tilex
-					self.rect.y += self.level.tiley
-				
-		if cmd == "CHOP":
-			if self.reckonAP(3):
-				terlab = ['Dense Woods', 'Medium Woods', 'Light Woods', 'Plain with Trees']
-				tertyp = {'Dense Woods': 13, 'Medium Woods': 12,  'Light Woods' : 1, 'Plain with Trees': 0}
-				if self.inventory['axe'] > 0:
-					for flava in terlab:
-						if self.level.maptiles[self.indx][self.indy].flavor == flava:
-							self.level.maptiles[self.indx][self.indy].set_Biome(tertyp[flava])
-							break	
-				
-		if cmd == "Plant":
-			if self.reckonAP(3):
-				if self.level.maptiles[self.indx][self.indy].flavor == "Plain":
-					self.level.maptiles[self.indx][self.indy].set_Biome(1)
-				
-				
-		if newx < 0 or newx >= len(self.level.maptiles):
-			self.level.Game_Over = True	
-			self.level.GOstr = "SPACE"
-		elif newy < 0 or newy >= len(self.level.maptiles[newx]):
-			self.level.Game_Over = True	
-			self.level.GOstr = "SPACE"				
-		
-		for badguy in pygame.sprite.spritecollide(self, self.level.baddies, False):
-			self.fight(badguy)
-			#if badguy.Alive == True:
-			#	self.rect = prev
-				
-		new = self.rect
-		if bgsig == 'NA':
-			xsig = True
-			ysig = True
-			
-			for loc in pygame.sprite.spritecollide(self, self.unpassable, False):
-				loc = loc.rect
-				
-				if prev.right <= loc.left and new.right > loc.left:
-					new.right = loc.left
-					xsig = False
-				if prev.left >= loc.right and new.left < loc.right:
-					new.left = loc.right
-					xsig = False
-				if prev.bottom <= loc.top and new.bottom > loc.top:
-					new.bottom = loc.top
-					ysig = False
-				if prev.top >= loc.bottom and new.top < loc.bottom:
-					new.top = loc.bottom
-					ysig = False
-			if xsig:
-				self.indx = newx
-			if ysig:
-				self.indy = newy
-				
-		
-		elif self.level.Game_Over == False:
-			
-			if self.level.maptiles[newx][newy] in self.unpassable:
-				pass
-			else:
-				self.level.move_BG(bgsig)
-				self.indx = newx
-				self.indy = newy
-				
-		for thing in pygame.sprite.spritecollide(self, self.level.items, True):
-			if thing.flavor == 'gem':
-				pygame.mixer.Sound('tadaa.wav').play()
-				self.level.Game_Over = True	
-				self.level.GOstr = "WIN"	
-			elif thing.flavor == 'axe':		
-				self.inventory['axe'] += 1
-				
+	def spawn(self,x,y):
+		self.scrnx = x
+		self.mapx = x
+		self.scrny = y
+		self.mapy = y
+		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
 
-		
-		if self.AP_c < 1:
-			self.level.end_turn = True		
+	def command(self, cmd):
+		if self.reckonAP(self.APcost[cmd]):
+			if cmd == "U":
+				if self.scrny*self.level.tiley <= self.level.tiley*self.visibility:
+					self.level.move_BG("D")
+				else:
+					self.move("U")
+			if cmd == "D":
+				if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))):
+					self.level.move_BG("U")
+				else:
+					self.move("D")
+			if cmd == "L":
+				if self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
+					self.level.move_BG("R")
+				else:
+					self.move("L")
+			if cmd == "R":
+				if self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
+					self.level.move_BG("L")
+				else:
+					self.move("R")
+			if cmd == "UL":
+				if self.scrny*self.level.tiley <= self.level.tiley*self.visibility or self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
+					self.level.move_BG("LR")
+				else:
+					self.move("UL")
+			if cmd == "UR":
+				if self.scrny*self.level.tiley <= self.level.tiley*self.visibility or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
+					self.level.move_BG("LL")
+				else:
+					self.move("UR")
+			if cmd == "LL":
+				if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))) or self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
+					self.level.move_BG("UR")
+				else:
+					self.move("LL")
+			if cmd == "LR":
+				if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))) or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
+					self.level.move_BG("UL")
+				else:
+					self.move("LR")
+					
+		else:
+			pass	
+			
+		if self.AP_c <= 0:
+			self.level.Turn_Over = 1
+			
+		self.spacecheck()
+		self.itemcheck()	
 				
+	def move(self, vec):
+		if vec == "U":
+			self.mapy -= 1
+			self.scrny -= 1
+		if vec == "D":
+			self.mapy += 1
+			self.scrny += 1
+		if vec == "L":
+			self.set_Image('L')
+			self.mapx -= 1
+			self.scrnx -= 1
+		if vec == "R":
+			self.set_Image('R')
+			self.mapx += 1
+			self.scrnx += 1
+		if vec == "UL":
+			self.set_Image('L')
+			self.mapy -= 1
+			self.mapx -= 1
+			self.scrny -= 1
+			self.scrnx -= 1
+		if vec == "UR":
+			self.set_Image('R')
+			self.mapy -= 1
+			self.mapx += 1
+			self.scrny -= 1
+			self.scrnx += 1
+		if vec == "LL":
+			self.set_Image('L')
+			self.mapy += 1
+			self.mapx -= 1
+			self.scrny += 1
+			self.scrnx -= 1
+		if vec == "LR":
+			self.set_Image('R')
+			self.mapy += 1
+			self.mapx += 1
+			self.scrny += 1
+			self. scrnx += 1
+		self.rect.x = self.mapx*self.level.tilex
+		self.rect.y = self.mapy*self.level.tiley
 		
-	def update(self):
-		pass
-	
+	def spacecheck(self):
+		for space in pygame.sprite.spritecollide(self, self.level.space, False):
+			self.level.Game_Over = 1
+		
+		
+	def itemcheck(self):
+		for item in pygame.sprite.spritecollide(self, self.level.items, True):
+			if item.flavor == 'gem':
+				self.level.Game_Over = 2
+			if item.flavor == 'axe':
+				self.inventory['axe'] += 1
+
+	def set_Image(self, name):
+		xind = 7
+		yind = 2
+		if name == 'L':
+			xind = 7
+			yind = 3
+		if name == 'R':
+			xind = 7
+			yind = 2
+			
+		self.level.animator.set_Img(xind,yind)
+		self.image = self.level.animator.get_Img().convert()
+		self.image.set_colorkey((255,0,0))
+
 	def reckonAP(self, cost):
 		if self.AP_c >= cost:
 			self.AP_c -= cost
 			return True
 		else:
-			return False	
-		
-	def damage(self, dmg):
-		self.HP_c -= dmg
-		if self.HP_c < 1:
-			self.level.Game_Over = False
-			self.level.GOstr = "Dead"	
-		
-	def fight(self, opponent):
-		if self.Att > opponent.Def:
-			opponent.damage(self.Att_Dam)
-	
+			return False
