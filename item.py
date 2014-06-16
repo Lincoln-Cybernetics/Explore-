@@ -1,54 +1,56 @@
 import pygame
-import ss
-
 
 class Item(pygame.sprite.Sprite):
-	def __init__(self, level, flav, *groups):
+	def __init__(self, level, *groups):
 		super(Item, self).__init__(*groups)
-		#self.image = pygame.image.load('gem.png')
-		self.sheet = pygame.image.load('exp100.png').convert()
-		self.animator = ss.Cutout(self.sheet, 100, 100)
-		#self.animator.set_Img(6,0)
-		#self.image = self.animator.get_Img().convert()
-		#self.image.set_colorkey((255,0,0))
+		#the game level
 		self.level = level
+		#base image
+		self.level.animator.set_Img(6,0)
+		self.image = self.level.animator.get_Img().convert()
+		self.image.set_colorkey((255,0,0))
 		
-		#self.flavor = 'default'
+		#type
 		self.flavor_saver = ['gem', 'axe']
-		self.x = 0
-		self.y = 0
-		self.set_type(flav)
-		#0 = gem
-		#1 = axe
+		self.flavor = 'gem'
+		#location
+		self.firstflag = True
+		self.scrnx = 0
+		self.scrny = 0
+		self.mapx = 0
+		self.mapy = 0
 		
-	def set_type(self, item):
-		self.flavor = self.flavor_saver[item]
-		if item == 0:
+	def spawn(self,x,y):
+		self.scrnx = x
+		self.scrny = y
+		if self.firstflag:
+			self.mapx = x
+			self.mapy = y
+			self.firstflag = False
+		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
+	
+	def set_type(self, itype):
+		self.flavor = self.flavor_saver[itype]
+		if itype == 0:
 			xind = 6
 			yind = 0
-			self.flavor = 'gem'
-		elif item == 1:
+		if itype == 1:
 			xind = 6
 			yind = 5
-			self.flavor = 'axe'
-		else:
-			xind = 6
-			yind = 0
-			self.flavor = 'default'
-		self.animator.set_Img(xind, yind)
-		self.image = self.animator.get_Img().convert()
+			
+		self.level.animator.set_Img(xind,yind)
+		self.image = self.level.animator.get_Img().convert()
 		self.image.set_colorkey((255,0,0))
-		self.rect = pygame.rect.Rect((100,100), self.image.get_size())
 
 	def set_Index(self, x, y):
-		self.x = x
-		self.rect.x = x*100
-		self.y = y
-		self.rect.y = y*100 
+		self.scrnx = x
+		self.rect.x = x*self.level.tilex
+		self.scrny = y
+		self.rect.y = y*self.level.tiley
 		
 	def get_Index(self, axis):
 		if axis == 'X':
-			return self.x
+			return self.scrnx
 		if axis == 'Y':
-			return self.y
+			return self.scrny
 		return -1
