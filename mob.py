@@ -29,6 +29,12 @@ class Mob(pygame.sprite.Sprite):
 		self.AP_c = 4
 		self.APcost = {"U": 1, "D": 1, "L": 1, "R": 1, "UL":2, "UR": 2, "LL": 2, "LR":2, "Chop":3, "Plant": 3}
 		
+		#fighting
+		self.HP_max = 5
+		self.HP_c = 5
+		self.ATT = 2
+		self.DEF = 1
+		self.DMG = 1
 		
 	def set_type(self, personality):
 			self.flavor = self.flavor_saver[personality]
@@ -90,39 +96,39 @@ class Mob(pygame.sprite.Sprite):
 			self.mapy += 1
 			self.scrny += 1
 		if vec == "L":
-			self.set_Image('L')
+			#self.set_Image('L')
 			self.mapx -= 1
 			self.scrnx -= 1
 		if vec == "R":
-			self.set_Image('R')
+			#self.set_Image('R')
 			self.mapx += 1
 			self.scrnx += 1
 		if vec == "UL":
-			self.set_Image('L')
+			#self.set_Image('L')
 			self.mapy -= 1
 			self.mapx -= 1
 			self.scrny -= 1
 			self.scrnx -= 1
 		if vec == "UR":
-			self.set_Image('R')
+			#self.set_Image('R')
 			self.mapy -= 1
 			self.mapx += 1
 			self.scrny -= 1
 			self.scrnx += 1
 		if vec == "LL":
-			self.set_Image('L')
+			#self.set_Image('L')
 			self.mapy += 1
 			self.mapx -= 1
 			self.scrny += 1
 			self.scrnx -= 1
 		if vec == "LR":
-			self.set_Image('R')
+			#self.set_Image('R')
 			self.mapy += 1
 			self.mapx += 1
 			self.scrny += 1
 			self. scrnx += 1
-		self.rect.x = self.mapx*self.level.tilex
-		self.rect.y = self.mapy*self.level.tiley
+		self.rect.x = self.scrnx*self.level.tilex
+		self.rect.y = self.scrny*self.level.tiley
 
 	def reckonAP(self, cost):
 		if self.AP_c >= cost:
@@ -149,4 +155,20 @@ class Mob(pygame.sprite.Sprite):
 		if self.flavor == "Static":
 			self.Turn_Over = True
 			return
+			
+		if self.flavor == "Lemming":
+			while self.Turn_Over == False:
+				self.command("L")
+				if self.AP_c <= 0:
+					self.Turn_Over = True
+			
+	def fight(self, opponent):
+		if self.ATT > opponent.DEF:
+			opponent.damage(self.DMG)
+			
+	def damage(self, dmg):
+		self.HP_c -= dmg
+		if self.HP_c <= 0:
+			self.Alive = False
+			
 			
