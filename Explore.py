@@ -35,7 +35,7 @@ class Game(object):
 		self.player1 = player.Player(self, self.players)
 		
 		
-		self.mapgen(19,19,'Random')
+		self.mapgen(8,8,'Random')
 		self.iterate_Game()
 		
 	def mapgen(self, x,y, maptype):
@@ -49,32 +49,47 @@ class Game(object):
 		for a in range(x):
 			maprow = []
 			for b in range(y):
+				
 				if maptype == 'Basic':
 					landtype = 1
+					
 				if maptype == 'Random':
 					landtype = random.randrange(15)+1
+					
+				#dude = mob.Mob(self, self.mobs)
+				#dude.set_type(1)
+				#self.mymobs.append(dude)
+				#dude.spawn(a,b)	
 				acre = tile.Land(self, self.terrain)
 				if a == 0 or b == 0 or a == x-1 or b == y-1:
 					acre.set_type(0)
 					self.space.add(acre)
 				else:
 					acre.set_type(landtype)
+					if landtype == 12 or landtype == 15:
+						self.player1.unpassable.add(acre)
 				acre.spawn(a, b)
 				self.background.add(acre)
 				maprow.append(acre)
+				
+			
 			self.mymap.append( maprow )
 		self.player1.spawn(1,1)
+		
 		if maptype == 'Basic':
 			mygem.spawn(4,5)
 			myaxe.spawn(5,4)
 			mydude.spawn(6,6)
+			
 		if maptype == 'Random':
 			mygem.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			myaxe.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			mydude.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
+			
+			
 		self.background.add(mygem)
 		self.background.add(myaxe)
-		self.background.add(mydude)
+		self.background.add(self.mobs)
 		
 	def iterate_Game(self):
 		while self.Game_Over == 0:
@@ -87,7 +102,9 @@ class Game(object):
 			
 			while self.Turn_Over == 0:
 				if self.Game_Over != 0:
-							break		
+							break
+								
+				#player input	
 				for event in pygame.event.get():
 						if event.type == pygame.QUIT:
 							return
@@ -112,10 +129,12 @@ class Game(object):
 							self.player1.command("LL")	
 						if event.type == pygame.KEYDOWN and event.key == pygame.K_KP3:
 							self.player1.command("LR")	
+						if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
+							self.player1.command("Chop")
+						
+						self.display()	
+						
 							
-						self.display()		
-			for dude in self.mobs:
-				dude.take_turn()			
 			while self.Turn_Over == 1:
 				if self.Game_Over:
 					break
@@ -133,7 +152,11 @@ class Game(object):
 					if event.type == pygame.KEYDOWN and  (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER):
 						self.Turn_Over = 0
 						break
-						
+			
+			#Mobs take actions	
+			for dude in self.mobs:
+				dude.take_turn()
+				self.display()			
 						
 		if self.Game_Over == 1:
 			print "You have walked off the edge of the world."
@@ -145,6 +168,10 @@ class Game(object):
 			print "You win!"
 			return
 		
+		if self.Game_Over == 3:
+			print "You Died."
+			print "R.I.P."
+			return
 		
 		
 	def display(self):
@@ -174,6 +201,10 @@ class Game(object):
 				tile.set_Index(tile.get_Index('X')-1, tile.get_Index('Y')+1)
 			if d == 'LR':
 				tile.set_Index(tile.get_Index('X')+1, tile.get_Index('Y')+1)
+		self.players.draw(screen)
+
+
+
 
 ########################################################################
 if __name__ == '__main__':
