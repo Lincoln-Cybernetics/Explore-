@@ -5,6 +5,10 @@ class Player(pygame.sprite.Sprite):
 		super(Player, self).__init__(*groups)
 		#the game level
 		self.level = level
+		
+		#spritegrups
+		self.unpassable = pygame.sprite.Group()
+		
 		#base image
 		self.set_Image('R')
 		self.scrnx = 0
@@ -12,13 +16,20 @@ class Player(pygame.sprite.Sprite):
 		self.scrny = 0
 		self.mapy = 0
 		#item inventory
-		self.inventory = {'axe': 0}
+		self.inventory = {'axe': 0, 'wood': 0}
 		
 		#player stats
 		self.visibility = 1
 		self.AP_max = 4
 		self.AP_c = 4
 		self.APcost = {"U": 1, "D": 1, "L": 1, "R": 1, "UL":2, "UR": 2, "LL": 2, "LR":2, "Chop":3, "Plant": 3}
+		
+		#fighting
+		self.HP_max = 10
+		self.HP_c = 10
+		self.ATT = 3
+		self.DEF = 2
+		self.DMG = 2
 		
 	def spawn(self,x,y):
 		self.scrnx = x
@@ -28,56 +39,116 @@ class Player(pygame.sprite.Sprite):
 		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
 
 	def command(self, cmd):
-		if self.reckonAP(self.APcost[cmd]):
+			#reference of old location data
+			prevrect = self.rect.copy()
+			pxs = self.scrnx
+			pys = self.scrny
+			pmx = self.mapx
+			pmy = self.mapy
+			
 			if cmd == "U":
-				if self.scrny*self.level.tiley <= self.level.tiley*self.visibility:
-					self.level.move_BG("D")
+				if self.level.mymap[self.mapx][self.mapy-1] in self.unpassable:
+					pass
 				else:
-					self.move("U")
+					if self.reckonAP(self.APcost[cmd]):
+						if self.scrny*self.level.tiley <= self.level.tiley*self.visibility:
+							self.level.move_BG("D")
+							self.mapy -= 1
+						else:
+							self.move("U")
 			if cmd == "D":
-				if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))):
-					self.level.move_BG("U")
+				if self.level.mymap[self.mapx][self.mapy+1] in self.unpassable:
+					pass
 				else:
-					self.move("D")
+					if self.reckonAP(self.APcost[cmd]):
+						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))):
+							self.level.move_BG("U")
+							self.mapy += 1
+						else:
+							self.move("D")
 			if cmd == "L":
-				if self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
-					self.level.move_BG("R")
+				if self.level.mymap[self.mapx-1][self.mapy] in self.unpassable:
+					pass
 				else:
-					self.move("L")
+					if self.reckonAP(self.APcost[cmd]):
+						if self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
+							self.level.move_BG("R")
+							self.mapx -= 1
+						else:
+							self.move("L")
 			if cmd == "R":
-				if self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
-					self.level.move_BG("L")
+				if self.level.mymap[self.mapx+1][self.mapy] in self.unpassable:
+					pass
 				else:
-					self.move("R")
+					if self.reckonAP(self.APcost[cmd]):
+						if self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
+							self.level.move_BG("L")
+							self.mapx += 1
+						else:
+							self.move("R")
 			if cmd == "UL":
-				if self.scrny*self.level.tiley <= self.level.tiley*self.visibility or self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
-					self.level.move_BG("LR")
+				if self.level.mymap[self.mapx-1][self.mapy-1] in self.unpassable:
+					pass
 				else:
-					self.move("UL")
+					if self.reckonAP(self.APcost[cmd]):
+						if self.scrny*self.level.tiley <= self.level.tiley*self.visibility or self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
+							self.level.move_BG("LR")
+							self.mapx -= 1
+							self.mapy -= 1
+						else:
+							self.move("UL")
 			if cmd == "UR":
-				if self.scrny*self.level.tiley <= self.level.tiley*self.visibility or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
-					self.level.move_BG("LL")
+				if self.level.mymap[self.mapx+1][self.mapy-1] in self.unpassable:
+					pass
 				else:
-					self.move("UR")
+					if self.reckonAP(self.APcost[cmd]):
+						if self.scrny*self.level.tiley <= self.level.tiley*self.visibility or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
+							self.level.move_BG("LL")
+							self.mapx += 1
+							self.mapy -= 1
+						else:
+							self.move("UR")
 			if cmd == "LL":
-				if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))) or self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
-					self.level.move_BG("UR")
+				if self.level.mymap[self.mapx-1][self.mapy+1] in self.unpassable:
+					pass
 				else:
-					self.move("LL")
+					if self.reckonAP(self.APcost[cmd]):
+						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))) or self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
+							self.level.move_BG("UR")
+							self.mapx -= 1
+							self.mapy += 1
+						else:
+							self.move("LL")
 			if cmd == "LR":
-				if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))) or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
-					self.level.move_BG("UL")
+				if self.level.mymap[self.mapx+1][self.mapy+1] in self.unpassable:
+					pass
 				else:
-					self.move("LR")
+					if self.reckonAP(self.APcost[cmd]):
+						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))) or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
+							self.level.move_BG("UL")
+							self.mapx += 1
+							self.mapy += 1
+						else:
+							self.move("LR")
 					
-		else:
-			pass	
+			if cmd == "Chop":
+				choppable = { "Dense Woods":4, "Medium Woods":3, "Light Woods": 2, "Grass and Trees":1 }
+				if choppable[self.level.mymap[self.mapx][self.mapy].flavor] > 0:
+					if self.reckonAP(self.APcost[cmd]):
+						self.inventory['wood'] += choppable[self.level.mymap[self.mapx][self.mapy].flavor]
+						self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
 			
-		if self.AP_c <= 0:
-			self.level.Turn_Over = 1
+			if self.AP_c <= 0:
+				self.level.Turn_Over = 1
 			
-		self.spacecheck()
-		self.itemcheck()	
+			self.spacecheck()
+			self.itemcheck()
+			if self.mobcheck() == False:
+				self.rect = prevrect
+				self.scrnx = pxs
+				self.scrny = pys
+				self.mapx = pmx
+				self.mapy = pmy	
 				
 	def move(self, vec):
 		if vec == "U":
@@ -118,8 +189,8 @@ class Player(pygame.sprite.Sprite):
 			self.mapx += 1
 			self.scrny += 1
 			self. scrnx += 1
-		self.rect.x = self.mapx*self.level.tilex
-		self.rect.y = self.mapy*self.level.tiley
+		self.rect.x = self.scrnx*self.level.tilex
+		self.rect.y = self.scrny*self.level.tiley
 		
 	def spacecheck(self):
 		for space in pygame.sprite.spritecollide(self, self.level.space, False):
@@ -153,3 +224,22 @@ class Player(pygame.sprite.Sprite):
 			return True
 		else:
 			return False
+
+	def mobcheck(self):
+		for mob in pygame.sprite.spritecollide(self, self.level.mobs, False):
+			self.fight(mob)
+			if mob.Alive == False:
+				mob.kill()
+				return True
+			return False
+		return True
+		
+	def fight(self, opponent):
+		if self.ATT > opponent.DEF:
+			opponent.damage(self.DMG)
+			
+	def damage(self, dmg):
+		self.HP_c -= dmg
+		if self.HP_c <= 0:
+			self.level.Game_Over = 3
+			
