@@ -30,12 +30,15 @@ class Game(object):
 		self.space = pygame.sprite.Group()
 		self.items = pygame.sprite.Group()
 		self.background = pygame.sprite.Group()
+		self.fightable = pygame.sprite.Group()
 		
 		#player
 		self.player1 = player.Player(self, self.players)
+		self.player1.add(self.fightable)
 		
 		
-		self.mapgen(8,8,'Random')
+		
+		self.mapgen(10,10,'Random')
 		self.iterate_Game()
 		
 	def mapgen(self, x,y, maptype):
@@ -44,7 +47,7 @@ class Game(object):
 		myaxe = item.Item(self, self.items)
 		myaxe.set_type(1)
 		mydude = mob.Mob(self, self.mobs)
-		mydude.set_type(0)
+		mydude.set_type(3)
 		self.mymobs.append(mydude)
 		for a in range(x):
 			maprow = []
@@ -90,6 +93,8 @@ class Game(object):
 		self.background.add(mygem)
 		self.background.add(myaxe)
 		self.background.add(self.mobs)
+		self.fightable.add(self.mobs)
+		
 		
 	def iterate_Game(self):
 		while self.Game_Over == 0:
@@ -131,6 +136,8 @@ class Game(object):
 							self.player1.command("LR")	
 						if event.type == pygame.KEYDOWN and event.key == pygame.K_c:
 							self.player1.command("Chop")
+						if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+							self.player1.command("Plant")
 						
 						self.display()	
 						
