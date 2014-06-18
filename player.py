@@ -31,6 +31,9 @@ class Player(pygame.sprite.Sprite):
 		self.DEF = 2
 		self.DMG = 2
 		
+		#status
+		self.Alive = True
+		
 	def spawn(self,x,y):
 		self.scrnx = x
 		self.mapx = x
@@ -133,10 +136,15 @@ class Player(pygame.sprite.Sprite):
 					
 			if cmd == "Chop":
 				choppable = { "Dense Woods":4, "Medium Woods":3, "Light Woods": 2, "Grass and Trees":1 }
-				if choppable[self.level.mymap[self.mapx][self.mapy].flavor] > 0:
+				if self.level.mymap[self.mapx][self.mapy].flavor in choppable:
 					if self.reckonAP(self.APcost[cmd]):
 						self.inventory['wood'] += choppable[self.level.mymap[self.mapx][self.mapy].flavor]
 						self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
+			
+			if cmd == "Plant":
+				if self.level.mymap[self.mapx][self.mapy].flavor == "Grassland":
+					if self.reckonAP(self.APcost[cmd]):
+						self.level.mymap[self.mapx][self.mapy].set_type(2)
 			
 			if self.AP_c <= 0:
 				self.level.Turn_Over = 1
@@ -226,12 +234,16 @@ class Player(pygame.sprite.Sprite):
 			return False
 
 	def mobcheck(self):
-		for mob in pygame.sprite.spritecollide(self, self.level.mobs, False):
-			self.fight(mob)
-			if mob.Alive == False:
-				mob.kill()
-				return True
-			return False
+		for mob in pygame.sprite.spritecollide(self, self.level.fightable, False):
+			if mob == self:
+				pass
+			else:
+				self.fight(mob)
+				if mob.Alive == False:
+					mob.kill()
+					return True
+				else:
+					return False
 		return True
 		
 	def fight(self, opponent):
@@ -242,4 +254,5 @@ class Player(pygame.sprite.Sprite):
 		self.HP_c -= dmg
 		if self.HP_c <= 0:
 			self.level.Game_Over = 3
-			
+		
+	
