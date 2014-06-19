@@ -11,7 +11,7 @@ class Item(pygame.sprite.Sprite):
 		self.image.set_colorkey((255,0,0))
 		
 		#type
-		self.flavor_saver = ['gem', 'axe']
+		self.flavor_saver = ['gem', 'axe', 'sammich']
 		self.flavor = 'gem'
 		#location
 		self.firstflag = True
@@ -37,6 +37,9 @@ class Item(pygame.sprite.Sprite):
 		if itype == 1:
 			xind = 6
 			yind = 5
+		if itype == 2:
+			xind = 6
+			yind = 4
 			
 		self.level.animator.set_Img(xind,yind)
 		self.image = self.level.animator.get_Img().convert()
