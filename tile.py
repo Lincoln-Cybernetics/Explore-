@@ -15,6 +15,7 @@ class Land(pygame.sprite.Sprite):
 		self.mapy = 0 
 		self.scrnx = 0
 		self.scrny = 0
+		
 		#type
 		self.flavor_saver = ["Void", "Grassland", "Grass and Trees", "Light Woods", "Medium Woods", "Dense Woods", "Hills", "Scrub", "Dunes",\
 			"Gravel", "Mountain", "Extinct Volcano", "Active Volcano", "Water", "Ocean", "Whirlpool"]
