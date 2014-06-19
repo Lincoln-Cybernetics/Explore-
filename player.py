@@ -15,6 +15,14 @@ class Player(pygame.sprite.Sprite):
 		self.mapx = 0
 		self.scrny = 0
 		self.mapy = 0
+		#reference of old location data
+		#self.prevrect = self.rect.copy()
+		self.pxs = self.scrnx
+		self.pys = self.scrny
+		self.pmx = self.mapx
+		self.pmy = self.mapy
+		self.bgsig = ""
+		
 		#item inventory
 		self.inventory = {'axe': 0, 'wood': 0}
 		
@@ -40,23 +48,26 @@ class Player(pygame.sprite.Sprite):
 		self.scrny = y
 		self.mapy = y
 		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
+		self.prevrect = self.rect.copy()
 
 	def command(self, cmd):
 			#reference of old location data
-			prevrect = self.rect.copy()
-			pxs = self.scrnx
-			pys = self.scrny
-			pmx = self.mapx
-			pmy = self.mapy
+			self.prevrect = self.rect.copy()
+			self.pxs = self.scrnx
+			self.pys = self.scrny
+			self.pmx = self.mapx
+			self.pmy = self.mapy
+			self.bgsig = ""
 			
 			if cmd == "U":
 				if self.level.mymap[self.mapx][self.mapy-1] in self.unpassable:
 					pass
 				else:
 					if self.reckonAP(self.APcost[cmd]):
+						self.mapy -= 1
 						if self.scrny*self.level.tiley <= self.level.tiley*self.visibility:
-							self.level.move_BG("D")
-							self.mapy -= 1
+							self.bgsig = "D"
+							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("U")
 			if cmd == "D":
@@ -64,9 +75,10 @@ class Player(pygame.sprite.Sprite):
 					pass
 				else:
 					if self.reckonAP(self.APcost[cmd]):
+						self.mapy += 1
 						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))):
-							self.level.move_BG("U")
-							self.mapy += 1
+							self.bgsig = "U"
+							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("D")
 			if cmd == "L":
@@ -74,9 +86,10 @@ class Player(pygame.sprite.Sprite):
 					pass
 				else:
 					if self.reckonAP(self.APcost[cmd]):
+						self.mapx -= 1
 						if self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
-							self.level.move_BG("R")
-							self.mapx -= 1
+							self.bgsig = "R"
+							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("L")
 			if cmd == "R":
@@ -84,9 +97,10 @@ class Player(pygame.sprite.Sprite):
 					pass
 				else:
 					if self.reckonAP(self.APcost[cmd]):
+						self.mapx += 1
 						if self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
-							self.level.move_BG("L")
-							self.mapx += 1
+							self.bgsig = "L"
+							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("R")
 			if cmd == "UL":
@@ -94,10 +108,11 @@ class Player(pygame.sprite.Sprite):
 					pass
 				else:
 					if self.reckonAP(self.APcost[cmd]):
+						self.mapx -= 1
+						self.mapy -= 1
 						if self.scrny*self.level.tiley <= self.level.tiley*self.visibility or self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
-							self.level.move_BG("LR")
-							self.mapx -= 1
-							self.mapy -= 1
+							self.bgsig = "LR"
+							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("UL")
 			if cmd == "UR":
@@ -105,10 +120,11 @@ class Player(pygame.sprite.Sprite):
 					pass
 				else:
 					if self.reckonAP(self.APcost[cmd]):
+						self.mapx += 1
+						self.mapy -= 1
 						if self.scrny*self.level.tiley <= self.level.tiley*self.visibility or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
-							self.level.move_BG("LL")
-							self.mapx += 1
-							self.mapy -= 1
+							self.bgsig = "LL"
+							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("UR")
 			if cmd == "LL":
@@ -116,10 +132,11 @@ class Player(pygame.sprite.Sprite):
 					pass
 				else:
 					if self.reckonAP(self.APcost[cmd]):
+						self.mapx -= 1
+						self.mapy += 1
 						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))) or self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
-							self.level.move_BG("UR")
-							self.mapx -= 1
-							self.mapy += 1
+							self.bgsig = "UR"
+							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("LL")
 			if cmd == "LR":
@@ -127,10 +144,11 @@ class Player(pygame.sprite.Sprite):
 					pass
 				else:
 					if self.reckonAP(self.APcost[cmd]):
+						self.mapx += 1
+						self.mapy += 1
 						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))) or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
-							self.level.move_BG("UL")
-							self.mapx += 1
-							self.mapy += 1
+							self.bgsig = "UL"
+							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("LR")
 					
@@ -143,60 +161,56 @@ class Player(pygame.sprite.Sprite):
 			
 			if cmd == "Plant":
 				if self.level.mymap[self.mapx][self.mapy].flavor == "Grassland":
-					if self.reckonAP(self.APcost[cmd]):
-						self.level.mymap[self.mapx][self.mapy].set_type(2)
-			
+					if self.inventory['wood'] > 0:
+						if self.reckonAP(self.APcost[cmd]):
+							self.level.mymap[self.mapx][self.mapy].set_type(2)
+							self.inventory['wood'] -= 1
+							
+							
 			if self.AP_c <= 0:
 				self.level.Turn_Over = 1
 			
+			
+			if self.mobcheck() == False:
+				self.rect = self.prevrect
+				self.scrnx = self.pxs
+				self.scrny = self.pys
+				self.mapx = self.pmx
+				self.mapy = self.pmy	
+				if self.bgsig != "":
+					bs = {"U":"D", "D":"U", "L":"R", "R":"L", "UL":"LR", "LR":"UL", "UR":"LL", "LL":"UR"}
+					self.level.move_BG(bs[self.bgsig])	
 			self.spacecheck()
 			self.itemcheck()
-			if self.mobcheck() == False:
-				self.rect = prevrect
-				self.scrnx = pxs
-				self.scrny = pys
-				self.mapx = pmx
-				self.mapy = pmy	
 				
 	def move(self, vec):
 		if vec == "U":
-			self.mapy -= 1
 			self.scrny -= 1
 		if vec == "D":
-			self.mapy += 1
 			self.scrny += 1
 		if vec == "L":
 			self.set_Image('L')
-			self.mapx -= 1
 			self.scrnx -= 1
 		if vec == "R":
 			self.set_Image('R')
-			self.mapx += 1
 			self.scrnx += 1
 		if vec == "UL":
 			self.set_Image('L')
-			self.mapy -= 1
-			self.mapx -= 1
 			self.scrny -= 1
 			self.scrnx -= 1
 		if vec == "UR":
 			self.set_Image('R')
-			self.mapy -= 1
-			self.mapx += 1
 			self.scrny -= 1
 			self.scrnx += 1
 		if vec == "LL":
 			self.set_Image('L')
-			self.mapy += 1
-			self.mapx -= 1
 			self.scrny += 1
 			self.scrnx -= 1
 		if vec == "LR":
 			self.set_Image('R')
-			self.mapy += 1
-			self.mapx += 1
 			self.scrny += 1
 			self. scrnx += 1
+			
 		self.rect.x = self.scrnx*self.level.tilex
 		self.rect.y = self.scrny*self.level.tiley
 		
@@ -211,6 +225,8 @@ class Player(pygame.sprite.Sprite):
 				self.level.Game_Over = 2
 			if item.flavor == 'axe':
 				self.inventory['axe'] += 1
+			if item.flavor == 'sammich':
+				self.HP_c = self.HP_max
 
 	def set_Image(self, name):
 		xind = 7
@@ -241,6 +257,10 @@ class Player(pygame.sprite.Sprite):
 				self.fight(mob)
 				if mob.Alive == False:
 					mob.kill()
+					del(mob)
+					if len(self.level.mymobs) == 1:
+						self.level.spawnmob()
+					
 					return True
 				else:
 					return False
