@@ -14,6 +14,7 @@ class Game(object):
 		self.Turn_Over = 0
 		self.winx = mainx
 		self.winy = mainy
+		self.counter = 0
 		
 		#spritesheet dis-aggregator
 		self.tilex = 100
@@ -38,17 +39,26 @@ class Game(object):
 		
 		
 		
-		self.mapgen(10,10,'Random')
+		self.mapgen(20,20,'Basic')
 		self.iterate_Game()
+	
+	def spawnmob(self):
+		dude = mob.Mob(self, self.mobs, self.background, self.fightable)
+		dude.set_type(random.randrange(4))
+		dude.spawn(random.randrange((self.winx/self.tilex)-2)+1, random.randrange((self.winy/self.tiley)-2)+1)
+		self.mymobs.append(dude)
 		
 	def mapgen(self, x,y, maptype):
 		mygem = item.Item(self, self.items)
 		mygem.set_type(0)
 		myaxe = item.Item(self, self.items)
 		myaxe.set_type(1)
+		mysamm = item.Item(self, self.items)
+		mysamm.set_type(2)
 		mydude = mob.Mob(self, self.mobs)
-		mydude.set_type(3)
-		self.mymobs.append(mydude)
+		mydude.set_type(2)
+		
+		
 		for a in range(x):
 			maprow = []
 			for b in range(y):
@@ -82,19 +92,22 @@ class Game(object):
 		if maptype == 'Basic':
 			mygem.spawn(4,5)
 			myaxe.spawn(5,4)
-			mydude.spawn(6,6)
+			mysamm.spawn(6,6)
+			mydude.spawn(7,7)
 			
 		if maptype == 'Random':
 			mygem.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			myaxe.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			mydude.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
+			mysamm.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			
 			
 		self.background.add(mygem)
 		self.background.add(myaxe)
+		self.background.add(mysamm)
 		self.background.add(self.mobs)
 		self.fightable.add(self.mobs)
-		
+		self.mymobs.append(mydude)
 		
 	def iterate_Game(self):
 		while self.Game_Over == 0:
@@ -143,6 +156,7 @@ class Game(object):
 						
 							
 			while self.Turn_Over == 1:
+				
 				if self.Game_Over:
 					break
 				# Display some text
@@ -159,11 +173,14 @@ class Game(object):
 					if event.type == pygame.KEYDOWN and  (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER):
 						self.Turn_Over = 0
 						break
-			
+			self.display()
+				
+				
 			#Mobs take actions	
 			for dude in self.mobs:
 				dude.take_turn()
-				self.display()			
+				self.display()	
+						
 						
 		if self.Game_Over == 1:
 			print "You have walked off the edge of the world."
@@ -182,10 +199,29 @@ class Game(object):
 		
 		
 	def display(self):
+		screen.set_clip(0,0,self.winx,self.winy)
 		self.terrain.draw(screen)
 		self.mobs.draw(screen)
 		self.items.draw(screen)
 		self.players.draw(screen)
+		font = pygame.font.Font(None, 20)
+		HPstr = "HP: "+str(self.player1.HP_c)+"/"+str(self.player1.HP_max)+"     "
+		APstr =  "AP: "+str(self.player1.AP_c)+"/"+str(self.player1.AP_max)+"     "
+		woodstr = "Wood: "+ str(self.player1.inventory['wood'])
+		text = font.render(HPstr + APstr+ woodstr, 1, (255, 255, 255), (0,0,0))
+		scrstr = "SCR: "+ str(self.player1.scrnx)+","+str(self.player1.scrny)+"     "
+		mapstr = "MAP: "+str(self.player1.mapx)+","+str(self.player1.mapy)+"     "
+		debugstr = scrstr + mapstr
+		text2 = font.render(debugstr, 1, (255,255,255), (0,0,0))
+		axstr = ""
+		if self.player1.inventory['axe'] > 0:
+			axstr = 'axe'
+		text3 = font.render(axstr, 1, (255,255,255), (0,0,0))
+		
+		# Blit everything to the screen
+		screen.blit(text, (0,0))
+		screen.blit(text2, (0,50))
+		screen.blit(text3, (0,25))
 		
 		pygame.display.flip()
 		
