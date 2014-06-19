@@ -30,9 +30,10 @@ class Mob(pygame.sprite.Sprite):
 		#status
 		self.Turn_Over = False
 		self.Alive = True
-		self.AP_max = 4
-		self.AP_c = 4
+		self.AP_max = 1
+		self.AP_c = 1
 		self.APcost = {"U": 1, "D": 1, "L": 1, "R": 1, "UL":2, "UR": 2, "LL": 2, "LR":2, "Chop":3, "Plant": 3}
+		self.trycount = 0
 		
 		#fighting
 		self.HP_max = 5
@@ -81,19 +82,23 @@ class Mob(pygame.sprite.Sprite):
 	def damage(self, dmg):
 		self.HP_c -= dmg
 		if self.HP_c <= 0:
-			self.Alive = False						
+			self.Alive = False
+			self.level.mymobs.remove(self)
+			self.level.spawnmob()	
+									
 		
 	def spawn(self,x,y):
-		self.scrnx = x
+		self.scrnx = self.level.mymap[x][y].scrnx
 		self.mapx = x
-		self.scrny = y
+		self.scrny = self.level.mymap[x][y].scrny
 		self.mapy = y
-		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
+		self.rect = pygame.rect.Rect((self.scrnx * self.level.tilex, self.scrny * self.level.tiley), self.image.get_size())
 
 	def spacecheck(self):
 		for space in pygame.sprite.spritecollide(self, self.level.space, False):
 			self.Alive = False
 			self.kill()
+			self.level.mymobs.remove(self)
 			
 	def mobcheck(self):
 		for mob in pygame.sprite.spritecollide(self, self.level.fightable, False):
@@ -239,6 +244,7 @@ class Mob(pygame.sprite.Sprite):
 		return -1
 
 	def take_turn(self):
+		self.trycount = 0
 		self.Turn_Over = False
 		
 		if self.flavor == "Static":
@@ -247,17 +253,26 @@ class Mob(pygame.sprite.Sprite):
 			
 		if self.flavor == "Lemming":
 			while self.Turn_Over == False:
+				self.trycount+=1
+				if self.trycount >=20:
+					self.Turn_Over = True
 				self.command("L")
 			return
 						
 		if self.flavor == "Wanderer":
 			while self.Turn_Over == False:
+				self.trycount+=1
+				if self.trycount >=20:
+					self.Turn_Over = True
 				dirs = ["U", "D", "L", "R", "UL", "UR", "LL", "LR"]
 				self.command(random.choice(dirs))
 			return
 			
 		if self.flavor == "Charger":
 			while self.Turn_Over == False:
+				self.trycount+=1
+				if self.trycount >=20:
+					self.Turn_Over = True
 				if self.AP_c >= 2:
 					if self.mapx > self.level.player1.mapx and self.mapy > self.level.player1.mapy:
 						self.command("UL")
