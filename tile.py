@@ -8,7 +8,9 @@ class Land(pygame.sprite.Sprite):
 		#base image
 		self.level.animator.set_Img(0,5)
 		self.image = self.level.animator.get_Img().convert()
+		self.secretimage = self.level.animator.get_Img().convert()
 		self.image.set_colorkey((255,0,0))
+		self.revealed = False
 		#location
 		self.firstflag = True
 		self.mapx = 0 
@@ -29,6 +31,10 @@ class Land(pygame.sprite.Sprite):
 		self.scrnx = x
 		self.scrny = y
 		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
+		
+	def reveal(self):
+		self.image = self.secretimage
+		self.revealed = True
 		
 	def set_type(self, land):
 		self.flavor = self.flavor_saver[land]
@@ -81,7 +87,7 @@ class Land(pygame.sprite.Sprite):
 			xind = 3
 			yind = 2
 		self.level.animator.set_Img(xind,yind)
-		self.image = self.level.animator.get_Img().convert()
+		self.secretimage = self.level.animator.get_Img().convert()
 		
 	def set_Index(self, x, y):
 		self.scrnx = x
