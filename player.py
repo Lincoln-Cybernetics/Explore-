@@ -24,7 +24,7 @@ class Player(pygame.sprite.Sprite):
 		self.bgsig = ""
 		
 		#item inventory
-		self.inventory = {'axe': 0, 'wood': 0}
+		self.inventory = {'axe': 0, 'wood': 0, 'telescope': 0}
 		
 		#player stats
 		self.visibility = 1
@@ -227,6 +227,9 @@ class Player(pygame.sprite.Sprite):
 				self.inventory['axe'] += 1
 			if item.flavor == 'sammich':
 				self.HP_c = self.HP_max
+			if item.flavor == 'telescope':
+				self.visibility += 1
+				self.inventory['telescope'] += 1
 
 	def set_Image(self, name):
 		xind = 7
