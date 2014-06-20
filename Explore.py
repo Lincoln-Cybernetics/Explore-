@@ -39,7 +39,7 @@ class Game(object):
 		
 		
 		
-		self.mapgen(20,20,'Basic')
+		self.mapgen(20,20,'Random')
 		self.iterate_Game()
 	
 	def spawnmob(self):
@@ -57,6 +57,8 @@ class Game(object):
 		mysamm.set_type(2)
 		mydude = mob.Mob(self, self.mobs)
 		mydude.set_type(2)
+		myscope = item.Item(self, self.items)
+		myscope.set_type(3)
 		
 		
 		for a in range(x):
@@ -69,10 +71,7 @@ class Game(object):
 				if maptype == 'Random':
 					landtype = random.randrange(15)+1
 					
-				#dude = mob.Mob(self, self.mobs)
-				#dude.set_type(1)
-				#self.mymobs.append(dude)
-				#dude.spawn(a,b)	
+					
 				acre = tile.Land(self, self.terrain)
 				if a == 0 or b == 0 or a == x-1 or b == y-1:
 					acre.set_type(0)
@@ -94,17 +93,16 @@ class Game(object):
 			myaxe.spawn(5,4)
 			mysamm.spawn(6,6)
 			mydude.spawn(7,7)
+			myscope.spawn(1,5)
 			
 		if maptype == 'Random':
 			mygem.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			myaxe.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			mydude.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			mysamm.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
+			myscope.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			
-			
-		self.background.add(mygem)
-		self.background.add(myaxe)
-		self.background.add(mysamm)
+		self.background.add(self.items)
 		self.background.add(self.mobs)
 		self.fightable.add(self.mobs)
 		self.mymobs.append(mydude)
@@ -199,10 +197,11 @@ class Game(object):
 		
 		
 	def display(self):
+		self.showBG()
 		screen.set_clip(0,0,self.winx,self.winy)
 		self.terrain.draw(screen)
-		self.mobs.draw(screen)
 		self.items.draw(screen)
+		self.mobs.draw(screen)
 		self.players.draw(screen)
 		font = pygame.font.Font(None, 20)
 		HPstr = "HP: "+str(self.player1.HP_c)+"/"+str(self.player1.HP_max)+"     "
@@ -215,8 +214,11 @@ class Game(object):
 		text2 = font.render(debugstr, 1, (255,255,255), (0,0,0))
 		axstr = ""
 		if self.player1.inventory['axe'] > 0:
-			axstr = 'axe'
-		text3 = font.render(axstr, 1, (255,255,255), (0,0,0))
+			axstr = 'axe'+"   "
+		scopestr = ""
+		if self.player1.inventory['telescope'] > 0:
+			scopestr = 'telescope'+"   "
+		text3 = font.render(axstr+scopestr, 1, (255,255,255), (0,0,0))
 		
 		# Blit everything to the screen
 		screen.blit(text, (0,0))
@@ -246,8 +248,21 @@ class Game(object):
 				tile.set_Index(tile.get_Index('X')+1, tile.get_Index('Y')+1)
 		self.players.draw(screen)
 
+	def showBG(self):
+		for x in range(len(self.mymap)):
+			for y in range(len(self.mymap[x])):
+				if abs(x-self.player1.mapx)<= self.player1.visibility and abs(y-self.player1.mapy)<= self.player1.visibility:
+					self.mymap[x][y].reveal()
+					for mob in self.mobs:
+						if self.mymap[mob.mapx][mob.mapy].revealed:
+							mob.reveal()
+						if mob.mapx == x and mob.mapy == y:
+							mob.reveal()
+					for item in self.items:
+						if item.mapx == x and item.mapy == y:
+							item.reveal()
 
-
+			
 
 ########################################################################
 if __name__ == '__main__':
