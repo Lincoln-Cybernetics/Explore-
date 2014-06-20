@@ -12,8 +12,11 @@ class Mob(pygame.sprite.Sprite):
 		
 		#base image
 		self.level.animator.set_Img(4,5)
+		self.secretimage = self.level.animator.get_Img().convert()
+		self.secretimage.set_colorkey((255,0,0))
+		self.level.animator.set_Img(0,5)
 		self.image = self.level.animator.get_Img().convert()
-		self.image.set_colorkey((255,0,0))
+		
 		
 		#type
 		self.flavor = "Static"
@@ -41,6 +44,9 @@ class Mob(pygame.sprite.Sprite):
 		self.ATT = 2
 		self.DEF = 1
 		self.DMG = 0
+		
+	def reveal(self):
+		self.image = self.secretimage
 		
 	def set_type(self, personality):
 			self.flavor = self.flavor_saver[personality]
@@ -72,8 +78,8 @@ class Mob(pygame.sprite.Sprite):
 				
 				
 			self.level.animator.set_Img(xind,yind)
-			self.image = self.level.animator.get_Img().convert()
-			self.image.set_colorkey((255,0,0))
+			self.secretimage = self.level.animator.get_Img().convert()
+			self.secretimage.set_colorkey((255,0,0))
 	
 	def fight(self, opponent):
 		if self.ATT > opponent.DEF:
