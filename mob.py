@@ -33,8 +33,8 @@ class Mob(pygame.sprite.Sprite):
 		#status
 		self.Turn_Over = False
 		self.Alive = True
-		self.AP_max = 1
-		self.AP_c = 1
+		self.AP_max = 5
+		self.AP_c = 5
 		self.APcost = {"U": 1, "D": 1, "L": 1, "R": 1, "UL":2, "UR": 2, "LL": 2, "LR":2, "Chop":3, "Plant": 3}
 		self.trycount = 0
 		
@@ -47,6 +47,10 @@ class Mob(pygame.sprite.Sprite):
 		
 	def reveal(self):
 		self.image = self.secretimage
+		
+	def hide(self):
+		self.level.animator.set_Img(0,5)
+		self.image = self.level.animator.get_Img().convert()
 		
 	def set_type(self, personality):
 			self.flavor = self.flavor_saver[personality]
@@ -89,22 +93,39 @@ class Mob(pygame.sprite.Sprite):
 		self.HP_c -= dmg
 		if self.HP_c <= 0:
 			self.Alive = False
-			self.level.mymobs.remove(self)
+			#self.level.mymobs.remove(self)
 			self.level.spawnmob()	
 									
 		
 	def spawn(self,x,y):
+		if x == 0:
+			x = 1
+		if y == 0:
+			y = 1
+		if x >= len(self.level.mymap)-1:
+			x = len(self.level.mymap)-2
+		if y >= len(self.level.mymap[x])-1:
+			y = len(self.level.mymap[x])-2
 		self.scrnx = self.level.mymap[x][y].scrnx
 		self.mapx = x
 		self.scrny = self.level.mymap[x][y].scrny
 		self.mapy = y
 		self.rect = pygame.rect.Rect((self.scrnx * self.level.tilex, self.scrny * self.level.tiley), self.image.get_size())
+		self.spacecheck()
 
 	def spacecheck(self):
 		for space in pygame.sprite.spritecollide(self, self.level.space, False):
 			self.Alive = False
 			self.kill()
-			self.level.mymobs.remove(self)
+			#self.level.mymobs.remove(self)
+		if self.mapx >= len(self.level.mymap) or self.mapx <= 0:
+			self.Alive = False
+			self.kill()
+			#self.level.mymobs.remove(self)
+		if  self.mapy >= len(self.level.mymap[self.mapx]) or self.mapy <= 0:
+			self.Alive = False
+			self.kill()
+			#self.level.mymobs.remove(self)
 			
 	def mobcheck(self):
 		for mob in pygame.sprite.spritecollide(self, self.level.fightable, False):
@@ -130,49 +151,49 @@ class Mob(pygame.sprite.Sprite):
 			if self.level.mymap[self.mapx][self.mapy-1] in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]):
+				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx][self.mapy-1].AP_cost):
 					self.move("U")
 		if cmd == "D":
 			if self.level.mymap[self.mapx][self.mapy+1] in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]):
+				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx][self.mapy+1].AP_cost):
 					self.move("D")
 		if cmd == "L":
 			if self.level.mymap[self.mapx-1][self.mapy] in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]):
+				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy].AP_cost):
 					self.move("L")
 		if cmd == "R":
 			if self.level.mymap[self.mapx+1][self.mapy] in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]):
+				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy].AP_cost):
 					self.move("R")
 		if cmd == "UL":
 			if self.level.mymap[self.mapx-1][self.mapy-1] in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]):
+				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy-1].AP_cost):
 					self.move("UL")
 		if cmd == "UR":
 			if self.level.mymap[self.mapx+1][self.mapy-1] in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]):
+				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy-1].AP_cost):
 					self.move("UR")
 		if cmd == "LL":
 			if self.level.mymap[self.mapx-1][self.mapy+1] in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]):
+				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy+1].AP_cost):
 					self.move("LL")
 		if cmd == "LR":
 			if self.level.mymap[self.mapx+1][self.mapy+1] in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]):
+				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy+1].AP_cost):
 					self.move("LR")
 			
 		self.spacecheck()
