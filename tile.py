@@ -21,6 +21,11 @@ class Land(pygame.sprite.Sprite):
 		#type
 		self.flavor_saver = ["Void", "Grassland", "Grass and Trees", "Light Woods", "Medium Woods", "Dense Woods", "Hills", "Scrub", "Dunes",\
 			"Gravel", "Mountain", "Extinct Volcano", "Active Volcano", "Water", "Ocean", "Whirlpool"]
+		
+		self.AP_markup = {"Void":0, "Grassland":0, "Grass and Trees":0, "Light Woods":1, "Medium Woods":2, "Dense Woods":3, "Hills":1, "Scrub":1, "Dunes":2,\
+			"Gravel":1, "Mountain":2, "Extinct Volcano":3, "Active Volcano":4, "Water":2, "Ocean":3, "Whirlpool":4}	
+		
+		self.AP_cost = 0
 		self.flavor = "Void"
 
 	def spawn(self,x,y):
@@ -88,6 +93,7 @@ class Land(pygame.sprite.Sprite):
 			yind = 2
 		self.level.animator.set_Img(xind,yind)
 		self.secretimage = self.level.animator.get_Img().convert()
+		self.AP_cost = self.AP_markup[self.flavor]
 		
 	def set_Index(self, x, y):
 		self.scrnx = x
