@@ -8,7 +8,7 @@ class Item(pygame.sprite.Sprite):
 		#base image
 		self.level.animator.set_Img(0,5)
 		self.image = self.level.animator.get_Img().convert()
-		self.image.set_colorkey((255,0,0))
+		#self.image.set_colorkey((255,0,0))
 		self.level.animator.set_Img(6,0)
 		self.secretimage = self.level.animator.get_Img().convert()
 		self.secretimage.set_colorkey((255,0,0))
@@ -24,13 +24,18 @@ class Item(pygame.sprite.Sprite):
 		self.mapy = 0
 		
 	def spawn(self,x,y):
-		self.scrnx = x
-		self.scrny = y
-		if self.firstflag:
-			self.mapx = x
-			self.mapy = y
-			self.firstflag = False
-		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
+		self.scrnx = self.level.mymap[x][y].scrnx
+		self.mapx = x
+		self.scrny = self.level.mymap[x][y].scrny
+		self.mapy = y
+		self.rect = pygame.rect.Rect((self.scrnx * self.level.tilex, self.scrny * self.level.tiley), self.image.get_size())
+		#self.scrnx = x
+		#self.scrny = y
+		#if self.firstflag:
+		#	self.mapx = x
+		#	self.mapy = y
+		#	self.firstflag = False
+		#self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
 	
 	def set_type(self, itype):
 		self.flavor = self.flavor_saver[itype]
