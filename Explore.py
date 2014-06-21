@@ -25,7 +25,7 @@ class Game(object):
 		#sprite groups
 		self.players = pygame.sprite.Group()
 		self.mobs = pygame.sprite.Group()
-		self.mymobs = []
+		#self.mymobs = []
 		self.terrain = pygame.sprite.Group()
 		self.mymap = []
 		self.space = pygame.sprite.Group()
@@ -46,7 +46,7 @@ class Game(object):
 		dude = mob.Mob(self, self.mobs, self.background, self.fightable)
 		dude.set_type(random.randrange(4))
 		dude.spawn(random.randrange((self.winx/self.tilex)-2)+1, random.randrange((self.winy/self.tiley)-2)+1)
-		self.mymobs.append(dude)
+		#self.mymobs.append(dude)
 		
 	def mapgen(self, x,y, maptype):
 		mygem = item.Item(self, self.items)
@@ -86,14 +86,15 @@ class Game(object):
 				
 			
 			self.mymap.append( maprow )
-		self.player1.spawn(1,1)
+		#self.player1.spawn(1,1)
 		
 		if maptype == 'Basic':
-			mygem.spawn(4,5)
-			myaxe.spawn(5,4)
-			mysamm.spawn(6,6)
-			mydude.spawn(7,7)
-			myscope.spawn(1,5)
+			mygem.spawn(10,10)
+			myaxe.spawn(8,4)
+			mysamm.spawn(11,6)
+			mydude.spawn(15,15)
+			myscope.spawn(5,5)
+			self.player1.spawn(6,3)
 			
 		if maptype == 'Random':
 			mygem.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
@@ -101,11 +102,37 @@ class Game(object):
 			mydude.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			mysamm.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			myscope.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
+			rnumx = random.randrange(x-2)+1
+			rnumy = random.randrange(y-2)+1
+			self.player1.spawn(rnumx,rnumy)
+			self.player1.position_scrn(6,3)
+			#normalize x
+			norx = 6-rnumx
+			if norx > 0:
+				for a in range(norx):
+					self.move_BG("R")
+				
+			elif norx == 0:
+				pass
+			else:
+				for a in range(abs(norx)):
+					self.move_BG("L")
+			#normalize y	
+			nory = 3-rnumy
+			if nory > 0:
+				for a in range(nory):
+					self.move_BG("D")
+			elif nory == 0:
+				pass
+			else:
+				for a in range(abs(nory)):
+					self.move_BG("U")
+			
 			
 		self.background.add(self.items)
 		self.background.add(self.mobs)
 		self.fightable.add(self.mobs)
-		self.mymobs.append(mydude)
+		#self.mymobs.append(mydude)
 		
 	def iterate_Game(self):
 		while self.Game_Over == 0:
@@ -206,7 +233,9 @@ class Game(object):
 		font = pygame.font.Font(None, 20)
 		HPstr = "HP: "+str(self.player1.HP_c)+"/"+str(self.player1.HP_max)+"     "
 		APstr =  "AP: "+str(self.player1.AP_c)+"/"+str(self.player1.AP_max)+"     "
-		woodstr = "Wood: "+ str(self.player1.inventory['wood'])
+		woodstr = ""
+		if self.player1.inventory['wood'] > 0:
+			woodstr = "Wood: "+ str(self.player1.inventory['wood'])
 		text = font.render(HPstr + APstr+ woodstr, 1, (255, 255, 255), (0,0,0))
 		scrstr = "SCR: "+ str(self.player1.scrnx)+","+str(self.player1.scrny)+"     "
 		mapstr = "MAP: "+str(self.player1.mapx)+","+str(self.player1.mapy)+"     "
@@ -253,15 +282,19 @@ class Game(object):
 			for y in range(len(self.mymap[x])):
 				if abs(x-self.player1.mapx)<= self.player1.visibility and abs(y-self.player1.mapy)<= self.player1.visibility:
 					self.mymap[x][y].reveal()
-					for mob in self.mobs:
-						if self.mymap[mob.mapx][mob.mapy].revealed:
-							mob.reveal()
-						if mob.mapx == x and mob.mapy == y:
-							mob.reveal()
-					for item in self.items:
-						if item.mapx == x and item.mapy == y:
-							item.reveal()
-
+		for mob in self.mobs:
+			if self.mymap[mob.mapx][mob.mapy].revealed:
+				mob.reveal()
+				print"hi"
+			else:
+				mob.hide()
+		self.mobs.draw(screen)
+						
+		for item in self.items:
+			if self.mymap[item.mapx][item.mapy].revealed:
+				item.reveal()
+		self.items.draw(screen)
+		pygame.display.flip()
 			
 
 ########################################################################
