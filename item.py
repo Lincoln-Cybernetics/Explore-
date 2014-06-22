@@ -6,12 +6,12 @@ class Item(pygame.sprite.Sprite):
 		#the game level
 		self.level = level
 		#base image
-		self.level.animator.set_Img(0,5)
-		self.image = self.level.animator.get_Img().convert()
+		#self.level.animator.set_Img(0,5)
+		#self.image = self.level.animator.get_Img().convert()
 		#self.image.set_colorkey((255,0,0))
 		self.level.animator.set_Img(6,0)
-		self.secretimage = self.level.animator.get_Img().convert()
-		self.secretimage.set_colorkey((255,0,0))
+		self.image = self.level.animator.get_Img().convert()
+		self.image.set_colorkey((255,0,0))
 		
 		#type
 		self.flavor_saver = ['gem', 'axe', 'sammich', 'telescope']
@@ -53,11 +53,11 @@ class Item(pygame.sprite.Sprite):
 			yind = 3
 			
 		self.level.animator.set_Img(xind,yind)
-		self.secretimage = self.level.animator.get_Img().convert()
-		self.secretimage.set_colorkey((255,0,0))
+		self.image = self.level.animator.get_Img().convert()
+		self.image.set_colorkey((255,0,0))
 
-	def reveal(self):
-		self.image = self.secretimage
+	#def reveal(self):
+	#	self.image = self.secretimage
 
 	def set_Index(self, x, y):
 		self.scrnx = x
