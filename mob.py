@@ -12,10 +12,9 @@ class Mob(pygame.sprite.Sprite):
 		
 		#base image
 		self.level.animator.set_Img(4,5)
-		self.secretimage = self.level.animator.get_Img().convert()
-		self.secretimage.set_colorkey((255,0,0))
-		self.level.animator.set_Img(0,5)
 		self.image = self.level.animator.get_Img().convert()
+		self.image.set_colorkey((255,0,0))
+		
 		
 		
 		#type
@@ -45,12 +44,12 @@ class Mob(pygame.sprite.Sprite):
 		self.DEF = 1
 		self.DMG = 0
 		
-	def reveal(self):
-		self.image = self.secretimage
+	#def reveal(self):
+	#	self.image = self.secretimage
 		
-	def hide(self):
-		self.level.animator.set_Img(0,5)
-		self.image = self.level.animator.get_Img().convert()
+	#def hide(self):
+	#	self.level.animator.set_Img(0,5)
+	#	self.image = self.level.animator.get_Img().convert()
 		
 	def set_type(self, personality):
 			self.flavor = self.flavor_saver[personality]
@@ -82,8 +81,8 @@ class Mob(pygame.sprite.Sprite):
 				
 				
 			self.level.animator.set_Img(xind,yind)
-			self.secretimage = self.level.animator.get_Img().convert()
-			self.secretimage.set_colorkey((255,0,0))
+			self.image = self.level.animator.get_Img().convert()
+			self.image.set_colorkey((255,0,0))
 	
 	def fight(self, opponent):
 		if self.ATT > opponent.DEF:
@@ -93,14 +92,13 @@ class Mob(pygame.sprite.Sprite):
 		self.HP_c -= dmg
 		if self.HP_c <= 0:
 			self.Alive = False
-			#self.level.mymobs.remove(self)
-			self.level.spawnmob()	
+			#self.level.spawnmob()	
 									
 		
 	def spawn(self,x,y):
-		if x == 0:
+		if x <= 0:
 			x = 1
-		if y == 0:
+		if y <= 0:
 			y = 1
 		if x >= len(self.level.mymap)-1:
 			x = len(self.level.mymap)-2
@@ -292,6 +290,7 @@ class Mob(pygame.sprite.Sprite):
 				if self.trycount >=20:
 					self.Turn_Over = True
 				dirs = ["U", "D", "L", "R", "UL", "UR", "LL", "LR"]
+				print self.mapx, self.mapy
 				self.command(random.choice(dirs))
 			return
 			
