@@ -32,6 +32,7 @@ class Game(object):
 		self.items = pygame.sprite.Group()
 		self.background = pygame.sprite.Group()
 		self.fightable = pygame.sprite.Group()
+		self.revealed = pygame.sprite.Group()
 		
 		#player
 		self.player1 = player.Player(self, self.players)
@@ -39,7 +40,7 @@ class Game(object):
 		
 		
 		
-		self.mapgen(20,20,'Random')
+		self.mapgen(10,10,'Random')
 		self.iterate_Game()
 	
 	def spawnmob(self):
@@ -89,12 +90,12 @@ class Game(object):
 		#self.player1.spawn(1,1)
 		
 		if maptype == 'Basic':
-			mygem.spawn(10,10)
+			mygem.spawn(5,5)
 			myaxe.spawn(8,4)
-			mysamm.spawn(11,6)
-			mydude.spawn(15,15)
-			myscope.spawn(5,5)
-			self.player1.spawn(6,3)
+			mysamm.spawn(1,6)
+			mydude.spawn(5,1)
+			myscope.spawn(3,2)
+			self.player1.spawn(3,3)
 			
 		if maptype == 'Random':
 			mygem.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
@@ -132,7 +133,7 @@ class Game(object):
 		self.background.add(self.items)
 		self.background.add(self.mobs)
 		self.fightable.add(self.mobs)
-		#self.mymobs.append(mydude)
+		
 		
 	def iterate_Game(self):
 		while self.Game_Over == 0:
@@ -224,12 +225,8 @@ class Game(object):
 		
 		
 	def display(self):
-		self.showBG()
-		screen.set_clip(0,0,self.winx,self.winy)
-		self.terrain.draw(screen)
-		self.items.draw(screen)
-		self.mobs.draw(screen)
-		self.players.draw(screen)
+		
+		#player stats
 		font = pygame.font.Font(None, 20)
 		HPstr = "HP: "+str(self.player1.HP_c)+"/"+str(self.player1.HP_max)+"     "
 		APstr =  "AP: "+str(self.player1.AP_c)+"/"+str(self.player1.AP_max)+"     "
@@ -248,8 +245,13 @@ class Game(object):
 		if self.player1.inventory['telescope'] > 0:
 			scopestr = 'telescope'+"   "
 		text3 = font.render(axstr+scopestr, 1, (255,255,255), (0,0,0))
+		#reveal visible sprites
+		self.showBG()
 		
 		# Blit everything to the screen
+		screen.set_clip(0,0,self.winx,self.winy)
+		self.revealed.draw(screen)
+		self.players.draw(screen)
 		screen.blit(text, (0,0))
 		screen.blit(text2, (0,50))
 		screen.blit(text3, (0,25))
@@ -258,7 +260,7 @@ class Game(object):
 		
 	def move_BG(self, d):
 		for tile in self.background:
-			#tile.set_type(tile.fnum)
+			
 			if d == 'U':
 				tile.set_Index(tile.get_Index('X'), tile.get_Index('Y')-1)
 			if d == 'D':
@@ -278,23 +280,23 @@ class Game(object):
 		self.players.draw(screen)
 
 	def showBG(self):
-		for x in range(len(self.mymap)):
-			for y in range(len(self.mymap[x])):
-				if abs(x-self.player1.mapx)<= self.player1.visibility and abs(y-self.player1.mapy)<= self.player1.visibility:
-					self.mymap[x][y].reveal()
-		for mob in self.mobs:
-			if self.mymap[mob.mapx][mob.mapy].revealed:
-				mob.reveal()
-				print"hi"
-			else:
-				mob.hide()
-		self.mobs.draw(screen)
-						
-		for item in self.items:
-			if self.mymap[item.mapx][item.mapy].revealed:
-				item.reveal()
-		self.items.draw(screen)
-		pygame.display.flip()
+		
+		for tile in self.terrain:
+			if abs(tile.mapx-self.player1.mapx)<= self.player1.visibility and abs(tile.mapy-self.player1.mapy)<= self.player1.visibility:
+				self.revealed.add(tile)
+		for tile in self.background:
+			#if mob in self.revealed:
+			#	self.revealed.remove(mob)
+			for land in pygame.sprite.spritecollide(tile,self.revealed, False):
+				self.revealed.add(tile)
+				#print"a"
+		#for item in self.items:
+			#if item in self.revealed:
+			#	self.revealed.remove(item)
+		#	for land in pygame.sprite.spritecollide(item, self.revealed, False):
+		#		self.revealed.add(item)
+				#print"hi"
+		
 			
 
 ########################################################################
