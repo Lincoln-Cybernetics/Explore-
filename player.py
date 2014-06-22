@@ -269,8 +269,7 @@ class Player(pygame.sprite.Sprite):
 				if mob.Alive == False:
 					mob.kill()
 					del(mob)
-					if len(self.level.mymobs) == 1:
-						self.level.spawnmob()
+					
 					
 					return True
 				else:
