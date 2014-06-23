@@ -15,6 +15,10 @@ class Game(object):
 		self.winx = mainx
 		self.winy = mainy
 		self.counter = 0
+		self.xmax = 80
+		self.ymax = 80
+		self.mapology = 'Random'
+		self.screen = screen
 		
 		#spritesheet dis-aggregator
 		self.tilex = 100
@@ -40,31 +44,46 @@ class Game(object):
 		
 		
 		
-		self.mapgen(10,10,'Random')
+		self.mapgen(self.xmax,self.ymax,self.mapology)
 		self.iterate_Game()
 	
 	def spawnmob(self):
 		dude = mob.Mob(self, self.mobs, self.background, self.fightable)
 		dude.set_type(random.randrange(4))
-		dude.spawn(random.randrange((self.winx/self.tilex)-2)+1, random.randrange((self.winy/self.tiley)-2)+1)
-		#self.mymobs.append(dude)
+		dude.spawn(random.randrange((self.xmax)-2)+1, random.randrange((self.ymax)-2)+1)
+		
 		
 	def mapgen(self, x,y, maptype):
+		sizefactor = (x/10) + (y/10)
+		
 		mygem = item.Item(self, self.items)
 		mygem.set_type(0)
-		myaxe = item.Item(self, self.items)
-		myaxe.set_type(1)
-		mysamm = item.Item(self, self.items)
-		mysamm.set_type(2)
-		mydude = mob.Mob(self, self.mobs)
-		mydude.set_type(2)
-		myscope = item.Item(self, self.items)
-		myscope.set_type(3)
 		
 		
-		for a in range(x):
+		if maptype == 'Basic':
+			myaxe = item.Item(self, self.items)
+			myaxe.set_type(1)
+			mysamm = item.Item(self, self.items)
+			mysamm.set_type(2)
+			mydude = mob.Mob(self, self.mobs)
+			mydude.set_type(0)
+			myscope = item.Item(self, self.items)
+			myscope.set_type(3)
+			mycant = item.Item(self, self.items)
+			mycant.set_type(4)
+			
+		if maptype == 'Random':
+			for num in range(sizefactor*3):
+				itemo = item.Item(self, self.items)
+				itemo.set_type(random.randrange(4)+1)
+			for umb in range(sizefactor):
+				mobbo = mob.Mob(self, self.mobs)
+				mobbo.set_type(random.randrange(4))
+		
+		
+		for b in range(y):
 			maprow = []
-			for b in range(y):
+			for a in range(x):
 				
 				if maptype == 'Basic':
 					landtype = 1
@@ -77,17 +96,18 @@ class Game(object):
 				if a == 0 or b == 0 or a == x-1 or b == y-1:
 					acre.set_type(0)
 					self.space.add(acre)
+					for mobbo in self.mobs:
+						mobbo.unpassable.add(acre)
 				else:
 					acre.set_type(landtype)
-					if landtype == 12 or landtype == 15:
-						self.player1.unpassable.add(acre)
+					#if landtype == 12 or landtype == 15:
+					#	pass
+						#self.player1.unpassable.add(acre)
 				acre.spawn(a, b)
 				self.background.add(acre)
 				maprow.append(acre)
 				
-			
 			self.mymap.append( maprow )
-		#self.player1.spawn(1,1)
 		
 		if maptype == 'Basic':
 			mygem.spawn(5,5)
@@ -95,40 +115,22 @@ class Game(object):
 			mysamm.spawn(1,6)
 			mydude.spawn(5,1)
 			myscope.spawn(3,2)
+			mycant.spawn(10,10)
 			self.player1.spawn(3,3)
+			self.player1.position_scrn(6,3)
+			self.normalize(3,3)
 			
 		if maptype == 'Random':
 			mygem.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
-			myaxe.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
-			mydude.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
-			mysamm.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
-			myscope.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
+			for itemo in self.items:
+				itemo.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
+			for mobbo in self.mobs:
+				mobbo.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			rnumx = random.randrange(x-2)+1
 			rnumy = random.randrange(y-2)+1
 			self.player1.spawn(rnumx,rnumy)
 			self.player1.position_scrn(6,3)
-			#normalize x
-			norx = 6-rnumx
-			if norx > 0:
-				for a in range(norx):
-					self.move_BG("R")
-				
-			elif norx == 0:
-				pass
-			else:
-				for a in range(abs(norx)):
-					self.move_BG("L")
-			#normalize y	
-			nory = 3-rnumy
-			if nory > 0:
-				for a in range(nory):
-					self.move_BG("D")
-			elif nory == 0:
-				pass
-			else:
-				for a in range(abs(nory)):
-					self.move_BG("U")
-			
+			self.normalize(rnumx,rnumy)	
 			
 		self.background.add(self.items)
 		self.background.add(self.mobs)
@@ -155,6 +157,7 @@ class Game(object):
 						if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
 							return
 						if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+							self.player1.command("")
 							self.Turn_Over = 1
 							break
 						if event.type == pygame.KEYDOWN and event.key == pygame.K_KP8:
@@ -220,20 +223,24 @@ class Game(object):
 		
 		if self.Game_Over == 3:
 			print "You Died."
-			print "R.I.P."
+			print "R.I.P., Ranger Dan."
 			return
+			
+		if self.Game_Over == 4:
+			print "You Died of thirst."
+			print "R.I.P., Ranger Dan."
 		
 		
 	def display(self):
+		screen.fill((0,0,0))
 		
 		#player stats
 		font = pygame.font.Font(None, 20)
 		HPstr = "HP: "+str(self.player1.HP_c)+"/"+str(self.player1.HP_max)+"     "
 		APstr =  "AP: "+str(self.player1.AP_c)+"/"+str(self.player1.AP_max)+"     "
-		woodstr = ""
-		if self.player1.inventory['wood'] > 0:
-			woodstr = "Wood: "+ str(self.player1.inventory['wood'])
-		text = font.render(HPstr + APstr+ woodstr, 1, (255, 255, 255), (0,0,0))
+		HYDstr = "HYD: "+str(self.player1.HYD_c)+"/"+str(self.player1.HYD_max)+"     "
+		
+		text = font.render(HPstr + APstr+ HYDstr, 1, (255, 255, 255), (0,0,0))
 		scrstr = "SCR: "+ str(self.player1.scrnx)+","+str(self.player1.scrny)+"     "
 		mapstr = "MAP: "+str(self.player1.mapx)+","+str(self.player1.mapy)+"     "
 		debugstr = scrstr + mapstr
@@ -244,13 +251,31 @@ class Game(object):
 		scopestr = ""
 		if self.player1.inventory['telescope'] > 0:
 			scopestr = 'telescope'+"   "
-		text3 = font.render(axstr+scopestr, 1, (255,255,255), (0,0,0))
+		cantstr = ""
+		if self.player1.inventory['canteen']> 0:
+			cantstr = 'canteen'+"   "
+		woodstr = ""
+		if self.player1.inventory['wood'] > 0:
+			woodstr = "Wood: "+ str(self.player1.inventory['wood'])+"     "
+		text3 = font.render(axstr+scopestr+cantstr+woodstr, 1, (255,255,255), (0,0,0))
+		
+		
 		#reveal visible sprites
 		self.showBG()
 		
 		# Blit everything to the screen
 		screen.set_clip(0,0,self.winx,self.winy)
-		self.revealed.draw(screen)
+		#self.revealed.draw(screen)
+		for land in self.terrain:
+			if land in self.revealed:
+				land.draw()
+		for item in self.items:
+			if item in self.revealed:
+				item.draw()
+		for mob in self.mobs:
+			if mob in self.revealed:
+				mob.draw()
+		self.space.draw(screen)
 		self.players.draw(screen)
 		screen.blit(text, (0,0))
 		screen.blit(text2, (0,50))
@@ -284,19 +309,41 @@ class Game(object):
 		for tile in self.terrain:
 			if abs(tile.mapx-self.player1.mapx)<= self.player1.visibility and abs(tile.mapy-self.player1.mapy)<= self.player1.visibility:
 				self.revealed.add(tile)
-		for tile in self.background:
-			#if mob in self.revealed:
-			#	self.revealed.remove(mob)
-			for land in pygame.sprite.spritecollide(tile,self.revealed, False):
-				self.revealed.add(tile)
-				#print"a"
-		#for item in self.items:
-			#if item in self.revealed:
-			#	self.revealed.remove(item)
-		#	for land in pygame.sprite.spritecollide(item, self.revealed, False):
-		#		self.revealed.add(item)
-				#print"hi"
-		
+		for thing in self.items:
+			for land in pygame.sprite.spritecollide(thing,self.revealed, False):
+				self.revealed.add(thing)
+		for villian in self.mobs:
+			if villian in self.revealed:
+				self.revealed.remove(villian)
+			for land in pygame.sprite.spritecollide(villian,self.revealed, False):
+				self.revealed.add(villian)
+	
+	def normalize(self,x,y):
+		#normalize x
+		norx = 6- x
+		if norx > 0:
+			for a in range(norx):
+				self.move_BG("R")
+				
+		elif norx == 0:
+			pass
+		else:
+			for a in range(abs(norx)):
+				self.move_BG("L")
+		#normalize y	
+		nory = 3- y
+		if nory > 0:
+			for a in range(nory):
+				self.move_BG("D")
+		elif nory == 0:
+			pass
+		else:
+			for a in range(abs(nory)):
+				self.move_BG("U")
+		for item in self.items:
+			item.position(item.mapx+norx, item.mapy+nory)
+		for mob in self.mobs:
+			mob.position(mob.mapx+norx, mob.mapy+nory)
 			
 
 ########################################################################
