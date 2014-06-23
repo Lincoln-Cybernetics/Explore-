@@ -24,7 +24,7 @@ class Player(pygame.sprite.Sprite):
 		self.bgsig = ""
 		
 		#item inventory
-		self.inventory = {'axe': 0, 'wood': 0, 'telescope': 0}
+		self.inventory = {'axe': 0, 'wood': 0, 'telescope': 0, 'canteen':0}
 		
 		#player stats
 		self.visibility = 1
@@ -41,14 +41,13 @@ class Player(pygame.sprite.Sprite):
 		
 		#status
 		self.Alive = True
+		self.HYD_max = 10
+		self.HYD_c = 10
 		
 	def spawn(self,x,y):
-		self.scrnx = x
 		self.mapx = x
-		self.scrny = y
 		self.mapy = y
-		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
-		self.prevrect = self.rect.copy()
+		
 		
 	def position_scrn(self,x,y):
 		self.scrnx = x
@@ -162,16 +161,17 @@ class Player(pygame.sprite.Sprite):
 					
 			if cmd == "Chop":
 				choppable = { "Dense Woods":4, "Medium Woods":3, "Light Woods": 2, "Grass and Trees":1 }
-				if self.level.mymap[self.mapx][self.mapy].flavor in choppable:
+				#print self.mapx, self.mapy
+				if self.level.mymap[self.mapy][self.mapx].flavor in choppable:
 					if self.reckonAP(self.APcost[cmd]):
-						self.inventory['wood'] += choppable[self.level.mymap[self.mapx][self.mapy].flavor]
-						self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
+						self.inventory['wood'] += choppable[self.level.mymap[self.mapy][self.mapx].flavor]
+						self.level.mymap[self.mapy][self.mapx].set_type(choppable[self.level.mymap[self.mapy][self.mapx].flavor])
 			
 			if cmd == "Plant":
-				if self.level.mymap[self.mapx][self.mapy].flavor == "Grassland":
+				if self.level.mymap[self.mapy][self.mapx].flavor == "Grassland":
 					if self.inventory['wood'] > 0:
 						if self.reckonAP(self.APcost[cmd]):
-							self.level.mymap[self.mapx][self.mapy].set_type(2)
+							self.level.mymap[self.mapy][self.mapx].set_type(2)
 							self.inventory['wood'] -= 1
 							
 							
@@ -190,6 +190,7 @@ class Player(pygame.sprite.Sprite):
 					self.level.move_BG(bs[self.bgsig])	
 			self.spacecheck()
 			self.itemcheck()
+			self.hydrate()
 				
 	def move(self, vec):
 		if vec == "U":
@@ -231,13 +232,33 @@ class Player(pygame.sprite.Sprite):
 		for item in pygame.sprite.spritecollide(self, self.level.items, True):
 			if item.flavor == 'gem':
 				self.level.Game_Over = 2
+				
 			if item.flavor == 'axe':
 				self.inventory['axe'] += 1
+				
 			if item.flavor == 'sammich':
 				self.HP_c = self.HP_max
+				
 			if item.flavor == 'telescope':
 				self.visibility += 1
+				if self.visibility > 4:
+					self.visibility = 4
 				self.inventory['telescope'] += 1
+				
+			if item.flavor == 'canteen':
+				self.HYD_max += 10
+				self.inventory['canteen'] += 1
+				
+	def hydrate(self):
+		for land in pygame.sprite.spritecollide(self, self.level.terrain, False):
+			if land.flavor == "Scrub":
+				self.HYD_c -= 1
+			elif land.flavor == "Dunes":
+				self.HYD_c -= 2
+			elif land.flavor == "Water":
+				self.HYD_c = self.HYD_max
+		if self.HYD_c <= 0:
+			self.level.Game_Over = 4
 
 	def set_Image(self, name):
 		xind = 7
