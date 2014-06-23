@@ -6,15 +6,12 @@ class Item(pygame.sprite.Sprite):
 		#the game level
 		self.level = level
 		#base image
-		#self.level.animator.set_Img(0,5)
-		#self.image = self.level.animator.get_Img().convert()
-		#self.image.set_colorkey((255,0,0))
 		self.level.animator.set_Img(6,0)
 		self.image = self.level.animator.get_Img().convert()
 		self.image.set_colorkey((255,0,0))
 		
 		#type
-		self.flavor_saver = ['gem', 'axe', 'sammich', 'telescope']
+		self.flavor_saver = ['gem', 'axe', 'sammich', 'telescope', 'canteen']
 		self.flavor = 'gem'
 		#location
 		self.firstflag = True
@@ -24,18 +21,13 @@ class Item(pygame.sprite.Sprite):
 		self.mapy = 0
 		
 	def spawn(self,x,y):
-		self.scrnx = self.level.mymap[x][y].scrnx
 		self.mapx = x
-		self.scrny = self.level.mymap[x][y].scrny
 		self.mapy = y
-		self.rect = pygame.rect.Rect((self.scrnx * self.level.tilex, self.scrny * self.level.tiley), self.image.get_size())
-		#self.scrnx = x
-		#self.scrny = y
-		#if self.firstflag:
-		#	self.mapx = x
-		#	self.mapy = y
-		#	self.firstflag = False
-		#self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
+		
+	def position(self,x,y):
+		self.scrnx = x
+		self.scrny = y
+		self.rect = pygame.rect.Rect((self.scrnx*self.level.tilex, self.scrny*self.level.tiley), self.image.get_size())
 	
 	def set_type(self, itype):
 		self.flavor = self.flavor_saver[itype]
@@ -51,13 +43,14 @@ class Item(pygame.sprite.Sprite):
 		if itype == 3:
 			xind = 6
 			yind = 3
+		if itype == 4:
+			xind = 4
+			yind = 4
 			
 		self.level.animator.set_Img(xind,yind)
 		self.image = self.level.animator.get_Img().convert()
 		self.image.set_colorkey((255,0,0))
 
-	#def reveal(self):
-	#	self.image = self.secretimage
 
 	def set_Index(self, x, y):
 		self.scrnx = x
@@ -71,3 +64,6 @@ class Item(pygame.sprite.Sprite):
 		if axis == 'Y':
 			return self.scrny
 		return -1
+		
+	def draw(self):
+		self.level.screen.blit(self.image, (self.rect.x,self.rect.y))
