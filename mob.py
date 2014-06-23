@@ -36,6 +36,7 @@ class Mob(pygame.sprite.Sprite):
 		self.AP_c = 5
 		self.APcost = {"U": 1, "D": 1, "L": 1, "R": 1, "UL":2, "UR": 2, "LL": 2, "LR":2, "Chop":3, "Plant": 3}
 		self.trycount = 0
+		self.visibility = 1
 		
 		#fighting
 		self.HP_max = 5
@@ -44,12 +45,11 @@ class Mob(pygame.sprite.Sprite):
 		self.DEF = 1
 		self.DMG = 0
 		
-	#def reveal(self):
-	#	self.image = self.secretimage
-		
-	#def hide(self):
-	#	self.level.animator.set_Img(0,5)
-	#	self.image = self.level.animator.get_Img().convert()
+	def sees_player(self):
+		if abs(self.mapx-self.level.player1.mapx) <= self.visibility and abs(self.mapy-self.level.player1.mapy) <= self.visibility:
+			return True
+		else:
+			return False
 		
 	def set_type(self, personality):
 			self.flavor = self.flavor_saver[personality]
@@ -96,34 +96,25 @@ class Mob(pygame.sprite.Sprite):
 									
 		
 	def spawn(self,x,y):
-		if x <= 0:
-			x = 1
-		if y <= 0:
-			y = 1
-		if x >= len(self.level.mymap)-1:
-			x = len(self.level.mymap)-2
-		if y >= len(self.level.mymap[x])-1:
-			y = len(self.level.mymap[x])-2
-		self.scrnx = self.level.mymap[x][y].scrnx
 		self.mapx = x
-		self.scrny = self.level.mymap[x][y].scrny
 		self.mapy = y
-		self.rect = pygame.rect.Rect((self.scrnx * self.level.tilex, self.scrny * self.level.tiley), self.image.get_size())
-		self.spacecheck()
+		
+
+	def position(self,x,y):
+		self.scrnx = x
+		self.scrny = y
+		self.rect = pygame.rect.Rect((self.scrnx*self.level.tilex, self.scrny*self.level.tiley), self.image.get_size())
 
 	def spacecheck(self):
 		for space in pygame.sprite.spritecollide(self, self.level.space, False):
 			self.Alive = False
 			self.kill()
-			#self.level.mymobs.remove(self)
 		if self.mapx >= len(self.level.mymap) or self.mapx <= 0:
 			self.Alive = False
 			self.kill()
-			#self.level.mymobs.remove(self)
 		if  self.mapy >= len(self.level.mymap[self.mapx]) or self.mapy <= 0:
 			self.Alive = False
 			self.kill()
-			#self.level.mymobs.remove(self)
 			
 	def mobcheck(self):
 		for mob in pygame.sprite.spritecollide(self, self.level.fightable, False):
@@ -138,6 +129,7 @@ class Mob(pygame.sprite.Sprite):
 		return True
 		
 	def command(self, cmd):
+		self.spacecheck()
 		#reference of old location data
 		prevrect = self.rect.copy()
 		pxs = self.scrnx
@@ -269,6 +261,8 @@ class Mob(pygame.sprite.Sprite):
 		return -1
 
 	def take_turn(self):
+		if self.sees_player():
+			pass
 		self.trycount = 0
 		self.Turn_Over = False
 		
@@ -290,7 +284,7 @@ class Mob(pygame.sprite.Sprite):
 				if self.trycount >=20:
 					self.Turn_Over = True
 				dirs = ["U", "D", "L", "R", "UL", "UR", "LL", "LR"]
-				print self.mapx, self.mapy
+				#print self.mapx, self.mapy
 				self.command(random.choice(dirs))
 			return
 			
@@ -319,3 +313,6 @@ class Mob(pygame.sprite.Sprite):
 			return
 			
 		return
+		
+	def draw(self):
+		self.level.screen.blit(self.image, (self.rect.x,self.rect.y))
