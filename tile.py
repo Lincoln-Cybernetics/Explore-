@@ -11,7 +11,6 @@ class Land(pygame.sprite.Sprite):
 		
 		#self.revealed = False
 		#location
-		self.firstflag = True
 		self.mapx = 0 
 		self.mapy = 0 
 		self.scrnx = 0
@@ -22,16 +21,14 @@ class Land(pygame.sprite.Sprite):
 			"Gravel", "Mountain", "Extinct Volcano", "Active Volcano", "Water", "Ocean", "Whirlpool"]
 		
 		self.AP_markup = {"Void":0, "Grassland":0, "Grass and Trees":0, "Light Woods":1, "Medium Woods":2, "Dense Woods":3, "Hills":1, "Scrub":1, "Dunes":2,\
-			"Gravel":1, "Mountain":2, "Extinct Volcano":3, "Active Volcano":4, "Water":2, "Ocean":3, "Whirlpool":4}	
+			"Gravel":1, "Mountain":2, "Extinct Volcano":3, "Active Volcano":2, "Water":2, "Ocean":3, "Whirlpool":2}	
 		
 		self.AP_cost = 0
 		self.flavor = "Void"
 
 	def spawn(self,x,y):
-		if self.firstflag:
-			self.mapx = x
-			self.mapy = y
-			firstflag = False
+		self.mapx = x
+		self.mapy = y
 		self.scrnx = x
 		self.scrny = y
 		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
@@ -104,3 +101,6 @@ class Land(pygame.sprite.Sprite):
 		if axis == 'Y':
 			return self.scrny
 		return -1
+
+	def draw(self):
+		self.level.screen.blit(self.image, (self.rect.x,self.rect.y))
