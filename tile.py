@@ -25,6 +25,7 @@ class Land(pygame.sprite.Sprite):
 		
 		self.AP_cost = 0
 		self.flavor = "Void"
+		self.flavnum = 0
 
 	def spawn(self,x,y):
 		self.mapx = x
@@ -37,6 +38,7 @@ class Land(pygame.sprite.Sprite):
 		
 	def set_type(self, land):
 		self.flavor = self.flavor_saver[land]
+		self.flavnum = land
 		if land == 0:
 			xind = 0
 			yind = 5
@@ -88,6 +90,12 @@ class Land(pygame.sprite.Sprite):
 		self.level.animator.set_Img(xind,yind)
 		self.image = self.level.animator.get_Img().convert()
 		self.AP_cost = self.AP_markup[self.flavor]
+		
+	def fade(self):
+		self.level.animator.set_Img(0,5)
+		fadeimg = self.level.animator.get_Img().convert()
+		fadeimg.set_alpha(128)
+		self.image.blit(fadeimg, (0,0))
 		
 	def set_Index(self, x, y):
 		self.scrnx = x
