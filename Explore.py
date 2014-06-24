@@ -17,7 +17,7 @@ class Game(object):
 		self.counter = 0
 		self.xmax = 80
 		self.ymax = 80
-		self.mapology = 'Random'
+		self.mapology = 'Proced1'
 		self.screen = screen
 		
 		#spritesheet dis-aggregator
@@ -37,6 +37,7 @@ class Game(object):
 		self.background = pygame.sprite.Group()
 		self.fightable = pygame.sprite.Group()
 		self.revealed = pygame.sprite.Group()
+		self.fogged = pygame.sprite.Group()
 		
 		#player
 		self.player1 = player.Player(self, self.players)
@@ -72,7 +73,7 @@ class Game(object):
 			mycant = item.Item(self, self.items)
 			mycant.set_type(4)
 			
-		if maptype == 'Random':
+		if maptype == 'Random' or 'Proced1':
 			for num in range(sizefactor*3):
 				itemo = item.Item(self, self.items)
 				itemo.set_type(random.randrange(4)+1)
@@ -90,6 +91,21 @@ class Game(object):
 					
 				if maptype == 'Random':
 					landtype = random.randrange(15)+1
+					
+				if maptype == 'Proced1':
+					common = [1,2,3,13]
+					uncommon = [4,5,6,7]
+					rare = [8,9,10]
+					vrare = [12,15]
+					landex = random.randrange(256)
+					if landex < 256:
+						landtype = random.choice(common)
+					if landex < 64:
+						landtype = random.choice(uncommon)
+					if landex < 16:
+						landtype = random.choice(rare)
+					if landex < 2:
+						landtype = random.choice(vrare)
 					
 					
 				acre = tile.Land(self, self.terrain)
@@ -120,7 +136,7 @@ class Game(object):
 			self.player1.position_scrn(6,3)
 			self.normalize(3,3)
 			
-		if maptype == 'Random':
+		if maptype == 'Random' or maptype == 'Proced1':
 			mygem.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			for itemo in self.items:
 				itemo.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
@@ -267,6 +283,8 @@ class Game(object):
 		screen.set_clip(0,0,self.winx,self.winy)
 		#self.revealed.draw(screen)
 		for land in self.terrain:
+			if land in self.fogged:
+				land.draw()
 			if land in self.revealed:
 				land.draw()
 		for item in self.items:
@@ -307,9 +325,17 @@ class Game(object):
 	def showBG(self):
 		
 		for tile in self.terrain:
+			if tile in self.revealed:
+				self.revealed.remove(tile)
+				self.fogged.add(tile)
+				tile.fade()
 			if abs(tile.mapx-self.player1.mapx)<= self.player1.visibility and abs(tile.mapy-self.player1.mapy)<= self.player1.visibility:
 				self.revealed.add(tile)
+				if tile in self.fogged:
+					self.fogged.remove(tile)
+					tile.set_type(tile.flavnum)
 		for thing in self.items:
+			self.revealed.remove(thing)
 			for land in pygame.sprite.spritecollide(thing,self.revealed, False):
 				self.revealed.add(thing)
 		for villian in self.mobs:
