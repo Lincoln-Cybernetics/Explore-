@@ -164,7 +164,7 @@ class Player(pygame.sprite.Sprite):
 				#print self.mapx, self.mapy
 				if self.level.mymap[self.mapy][self.mapx].flavor in choppable:
 					if self.reckonAP(self.APcost[cmd]):
-						self.inventory['wood'] += choppable[self.level.mymap[self.mapy][self.mapx].flavor]
+						self.inventory['wood'] += self.level.mymap[self.mapy][self.mapx].woodpoints
 						self.level.mymap[self.mapy][self.mapx].set_type(choppable[self.level.mymap[self.mapy][self.mapx].flavor])
 			
 			if cmd == "Plant":
@@ -247,6 +247,8 @@ class Player(pygame.sprite.Sprite):
 				
 			if item.flavor == 'canteen':
 				self.HYD_max += 10
+				if self.HYD_max > 40:
+					self.HYD_max = 40
 				self.inventory['canteen'] += 1
 				
 	def hydrate(self):
@@ -257,8 +259,12 @@ class Player(pygame.sprite.Sprite):
 				self.HYD_c -= 2
 			elif land.flavor == "Water":
 				self.HYD_c = self.HYD_max
+			elif land.flavor == "Oasis":
+				self.HYD_c += 10
 		if self.HYD_c <= 0:
 			self.level.Game_Over = 4
+		if self.HYD_c > self.HYD_max:
+			self.HYD_c = self.HYD_max
 
 	def set_Image(self, name):
 		xind = 7
