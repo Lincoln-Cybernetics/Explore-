@@ -15,8 +15,8 @@ class Game(object):
 		self.winx = mainx
 		self.winy = mainy
 		self.counter = 0
-		self.xmax = 80
-		self.ymax = 80
+		self.xmax = 30
+		self.ymax = 30
 		self.mapology = 'Proced1'
 		self.screen = screen
 		
@@ -51,6 +51,7 @@ class Game(object):
 	def spawnmob(self):
 		dude = mob.Mob(self, self.mobs, self.background, self.fightable)
 		dude.set_type(random.randrange(4))
+		dude.set_species(random.randrange(2))
 		dude.spawn(random.randrange((self.xmax)-2)+1, random.randrange((self.ymax)-2)+1)
 		
 		
@@ -80,6 +81,7 @@ class Game(object):
 			for umb in range(sizefactor):
 				mobbo = mob.Mob(self, self.mobs)
 				mobbo.set_type(random.randrange(4))
+				mobbo.set_species(random.randrange(2))
 		
 		
 		for b in range(y):
@@ -90,13 +92,27 @@ class Game(object):
 					landtype = 1
 					
 				if maptype == 'Random':
-					landtype = random.randrange(15)+1
+					landtype = random.randrange(16)+1
 					
 				if maptype == 'Proced1':
-					common = [1,2,3,13]
-					uncommon = [4,5,6,7]
-					rare = [8,9,10]
-					vrare = [12,15]
+					#grassland/trees
+					#common = [1,2,3,13]
+					#uncommon = [4,5,6,7]
+					#rare = [8,9,10]
+					#vrare = [12,15]
+					
+					#desert
+					#common = [8]
+					#uncommon = [7,16]
+					#rare = [9]
+					#vrare = [1,2]
+					
+					#Forest
+					common = [3,4,5,9]
+					uncommon = [1,2,6]
+					rare = [7,13]
+					vrare = [10,11,12]
+					
 					landex = random.randrange(256)
 					if landex < 256:
 						landtype = random.choice(common)
