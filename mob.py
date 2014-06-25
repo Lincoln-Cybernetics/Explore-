@@ -21,6 +21,8 @@ class Mob(pygame.sprite.Sprite):
 		self.flavor = "Static"
 		self.flavor_saver = ["Static", "Lemming", "Wanderer", "Charger"]
 		self.ATflag = 0#All-Terrain flag
+		self.species = "Hobnail"
+		self.taxonomy = ["Hobnail", "Bear"]
 		
 		#location
 		self.firstflag = True
@@ -50,39 +52,52 @@ class Mob(pygame.sprite.Sprite):
 			return True
 		else:
 			return False
+			
+	def set_species(self, kind):
+		self.species = self.taxonomy[kind]
+		#Hobnail
+		if kind == 0:
+			xind = 4
+			yind = 5
+			self.ATflag = 0
+			
+		#Bear
+		if kind == 1:
+			xind = 4
+			yind = 3
+			self.ATflag = 0
+			self.ATT = 4
+			self.DMG = 1
+			self.HP_max = 8
+			self.HP_c = 8
+			self.AP_max = 4
+			self.AP_c = 4
+			
+		#set the sprite image
+		self.level.animator.set_Img(xind,yind)
+		self.image = self.level.animator.get_Img().convert()
+		self.image.set_colorkey((255,0,0))
 		
 	def set_type(self, personality):
 			self.flavor = self.flavor_saver[personality]
 			#static
 			if personality == 0:
-				xind = 4
-				yind = 5
-				self.ATflag = 0
+				pass
 			#lemming
 			if personality == 1:
-				xind = 4
-				yind = 5
-				self.ATflag = 0
+				pass
 			#wanderer
 			if personality == 2:
-				xind = 4
-				yind = 5
 				self.ATflag = 1
 			#charger
 			if personality == 3:
-				xind = 4
-				yind = 5
-				self.ATflag = 0
+				pass
 			#default
 			else:
-				xind = 4
-				yind = 5
-				self.ATflag = 0
+				pass
 				
 				
-			self.level.animator.set_Img(xind,yind)
-			self.image = self.level.animator.get_Img().convert()
-			self.image.set_colorkey((255,0,0))
+			
 	
 	def fight(self, opponent):
 		if self.ATT > opponent.DEF:
