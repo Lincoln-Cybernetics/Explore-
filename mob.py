@@ -4,6 +4,8 @@ import random
 class Mob(pygame.sprite.Sprite):
 	def __init__(self, level, *groups):
 		super(Mob, self).__init__(*groups)
+		#My BRAIN!
+		self.brain = Brain(self)
 		#the game level
 		self.level = level
 		
@@ -18,8 +20,8 @@ class Mob(pygame.sprite.Sprite):
 		
 		
 		#type
-		self.flavor = "Static"
-		self.flavor_saver = ["Static", "Lemming", "Wanderer", "Charger"]
+		#self.flavor = "Static"
+		#self.flavor_saver = ["Static", "Lemming", "Wanderer", "Charger"]
 		self.ATflag = 0#All-Terrain flag
 		self.species = "Hobnail"
 		self.taxonomy = ["Hobnail", "Bear"]
@@ -38,6 +40,7 @@ class Mob(pygame.sprite.Sprite):
 		self.AP_c = 5
 		self.APcost = {"U": 1, "D": 1, "L": 1, "R": 1, "UL":2, "UR": 2, "LL": 2, "LR":2, "Chop":3, "Plant": 3}
 		self.trycount = 0
+		self.trythresh = 20
 		self.visibility = 1
 		
 		#fighting
@@ -57,14 +60,10 @@ class Mob(pygame.sprite.Sprite):
 		self.species = self.taxonomy[kind]
 		#Hobnail
 		if kind == 0:
-			xind = 4
-			yind = 5
 			self.ATflag = 0
 			
 		#Bear
 		if kind == 1:
-			xind = 4
-			yind = 3
 			self.ATflag = 0
 			self.ATT = 4
 			self.DMG = 1
@@ -72,33 +71,35 @@ class Mob(pygame.sprite.Sprite):
 			self.HP_c = 8
 			self.AP_max = 4
 			self.AP_c = 4
-			
+		
+		self.set_Image("Species")	
+		
+		
+	def set_Image(self, hint):
+		if hint == "Species":
+			if self.species == "Hobnail":
+				xind = 4
+				yind = 5
+			if self.species == "Bear":
+				xind = 4
+				yind = 3
+				
+		if hint == "Angry":
+			if self.species == "Hobnail":
+				xind = 4
+				yind = 5
+			if self.species == "Bear":
+				xind = 3
+				yind = 3
+				
 		#set the sprite image
 		self.level.animator.set_Img(xind,yind)
 		self.image = self.level.animator.get_Img().convert()
 		self.image.set_colorkey((255,0,0))
 		
 	def set_type(self, personality):
-			self.flavor = self.flavor_saver[personality]
-			#static
-			if personality == 0:
-				pass
-			#lemming
-			if personality == 1:
-				pass
-			#wanderer
-			if personality == 2:
-				self.ATflag = 1
-			#charger
-			if personality == 3:
-				pass
-			#default
-			else:
-				pass
+			self.brain.set_personality(personality)
 				
-				
-			
-	
 	def fight(self, opponent):
 		if self.ATT > opponent.DEF:
 			opponent.damage(self.DMG)				
@@ -276,58 +277,97 @@ class Mob(pygame.sprite.Sprite):
 		return -1
 
 	def take_turn(self):
-		if self.sees_player():
-			pass
 		self.trycount = 0
 		self.Turn_Over = False
+		while self.Turn_Over == False:
+			self.trycount += 1
+			self.brain.think()
+			self.brain.get_Action()
+			if self.AP_c <= 0 or self.trycount > self.trythresh:
+				self.Turn_Over = True
 		
-		if self.flavor == "Static":
-			self.Turn_Over = True
-			return
-			
-		if self.flavor == "Lemming":
-			while self.Turn_Over == False:
-				self.trycount+=1
-				if self.trycount >=20:
-					self.Turn_Over = True
-				self.command("L")
-			return
-						
-		if self.flavor == "Wanderer":
-			while self.Turn_Over == False:
-				self.trycount+=1
-				if self.trycount >=20:
-					self.Turn_Over = True
-				dirs = ["U", "D", "L", "R", "UL", "UR", "LL", "LR"]
-				#print self.mapx, self.mapy
-				self.command(random.choice(dirs))
-			return
-			
-		if self.flavor == "Charger":
-			while self.Turn_Over == False:
-				self.trycount+=1
-				if self.trycount >=20:
-					self.Turn_Over = True
-				if self.AP_c >= 2:
-					if self.mapx > self.level.player1.mapx and self.mapy > self.level.player1.mapy:
-						self.command("UL")
-					if self.mapx < self.level.player1.mapx and self.mapy > self.level.player1.mapy:
-						self.command("UR")
-					if self.mapx > self.level.player1.mapx and self.mapy < self.level.player1.mapy:
-						self.command("LL")
-					if self.mapx < self.level.player1.mapx and self.mapy < self.level.player1.mapy:
-						self.command("LR")
-				if self.mapx > self.level.player1.mapx:
-					self.command("L")
-				if self.mapx < self.level.player1.mapx:
-					self.command("R")
-				if self.mapy > self.level.player1.mapy:
-					self.command("U")
-				if self.mapy < self.level.player1.mapy:
-					self.command("D")
-			return
-			
 		return
 		
 	def draw(self):
 		self.level.screen.blit(self.image, (self.rect.x,self.rect.y))
+###end of mob class###
+
+class Brain(object):
+	def __init__(self, body):
+		#attach the brain to the body
+		self.body = body
+		#personality types
+		self.ptypes = ["Static", "Lemming", "Wanderer", "Charger","Hunter"]
+		self.flavor = "Static"
+		self.fnum = 0
+		#states
+		self.state = "Static"
+		#preferred direction for Lemming
+		self.perferred_d = "L"
+		#count attempted, unsuccessful actions
+		self.trycount = 0
+		
+	def set_personality(self, persona):
+		self.flavor = self.ptypes[persona]
+		self.fnum = persona
+		if persona < 4:
+			self.state = self.flavor
+		if persona == 4:
+			if self.body.sees_player():
+				self.state = "Charger"
+				self.body.set_Image("Angry")
+			else:
+				self.state = "Wanderer"
+				self.set_Image("Species")
+		
+	def get_Action(self):
+		
+		if self.state == "Static":
+			self.body.Turn_Over = True
+			return
+			
+		if self.state == "Lemming":
+			self.body.command(self.perferred_d)
+			return
+				
+		if self.state == "Wanderer":
+			dirs = ["U", "D", "L", "R", "UL", "UR", "LL", "LR"]
+			self.body.command(random.choice(dirs))
+			return
+
+		if self.state == "Charger":
+			if self.body.AP_c >= 2:
+				if self.body.mapx > self.body.level.player1.mapx and self.body.mapy > self.body.level.player1.mapy:
+					self.body.command("UL")
+				if self.body.mapx < self.body.level.player1.mapx and self.body.mapy > self.body.level.player1.mapy:
+					self.body.command("UR")
+				if self.body.mapx > self.body.level.player1.mapx and self.body.mapy < self.body.level.player1.mapy:
+					self.body.command("LL")
+				if self.body.mapx < self.body.level.player1.mapx and self.body.mapy < self.body.level.player1.mapy:
+					self.body.command("LR")
+			if self.body.mapx > self.body.level.player1.mapx:
+				self.body.command("L")
+			if self.body.mapx < self.body.level.player1.mapx:
+				self.body.command("R")
+			if self.body.mapy > self.body.level.player1.mapy:
+				self.body.command("U")
+			if self.body.mapy < self.body.level.player1.mapy:
+				self.body.command("D")
+			return
+			
+	def think(self):
+		if self.fnum < 4:
+			return
+		if self.fnum == 4:
+			if self.state == "Charger":
+				self.body.set_Image("Angry")
+			else:
+				if self.body.sees_player():
+					self.state = "Charger"
+					self.body.set_Image("Angry")
+				else:
+					self.state = "Wanderer"
+					self.body.set_Image("Species")
+			
+			
+###end of Brain class###
