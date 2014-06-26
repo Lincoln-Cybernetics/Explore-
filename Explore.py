@@ -50,7 +50,7 @@ class Game(object):
 	
 	def spawnmob(self):
 		dude = mob.Mob(self, self.mobs, self.background, self.fightable)
-		dude.set_type(random.randrange(4))
+		dude.set_type(random.randrange(5))
 		dude.set_species(random.randrange(2))
 		dude.spawn(random.randrange((self.xmax)-2)+1, random.randrange((self.ymax)-2)+1)
 		
@@ -80,7 +80,7 @@ class Game(object):
 				itemo.set_type(random.randrange(4)+1)
 			for umb in range(sizefactor):
 				mobbo = mob.Mob(self, self.mobs)
-				mobbo.set_type(random.randrange(4))
+				mobbo.set_type(4)#random.randrange(5))
 				mobbo.set_species(random.randrange(2))
 		
 		
@@ -96,10 +96,10 @@ class Game(object):
 					
 				if maptype == 'Proced1':
 					#grassland/trees
-					#common = [1,2,3,13]
-					#uncommon = [4,5,6,7]
-					#rare = [8,9,10]
-					#vrare = [12,15]
+					common = [1,2,3,13]
+					uncommon = [4,5,6,7]
+					rare = [8,9,10]
+					vrare = [12,15]
 					
 					#desert
 					#common = [8]
@@ -108,10 +108,10 @@ class Game(object):
 					#vrare = [1,2]
 					
 					#Forest
-					common = [3,4,5,9]
-					uncommon = [1,2,6]
-					rare = [7,13]
-					vrare = [10,11,12]
+					#common = [3,4,5,9]
+					#uncommon = [1,2,6]
+					#rare = [7,13]
+					#vrare = [10,11,12]
 					
 					landex = random.randrange(256)
 					if landex < 256:
