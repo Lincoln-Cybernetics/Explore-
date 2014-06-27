@@ -80,7 +80,7 @@ class Game(object):
 				itemo.set_type(random.randrange(4)+1)
 			for umb in range(sizefactor):
 				mobbo = mob.Mob(self, self.mobs)
-				mobbo.set_type(4)#random.randrange(5))
+				mobbo.set_type(random.randrange(5))
 				mobbo.set_species(random.randrange(2))
 		
 		
@@ -179,6 +179,7 @@ class Game(object):
 				dude.AP_c = dude.AP_max
 			
 			while self.Turn_Over == 0:
+				self.player1.visibility = 1
 				if self.Game_Over != 0:
 							break
 								
@@ -212,6 +213,8 @@ class Game(object):
 							self.player1.command("Chop")
 						if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
 							self.player1.command("Plant")
+						if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
+							self.player1.visibility = self.player1.televis
 						
 						self.display()	
 						
