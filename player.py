@@ -28,6 +28,8 @@ class Player(pygame.sprite.Sprite):
 		
 		#player stats
 		self.visibility = 1
+		self.televis = 1
+		self.screen_border = 1
 		self.AP_max = 10
 		self.AP_c = 10
 		self.APcost = {"U": 1, "D": 1, "L": 1, "R": 1, "UL":2, "UR": 2, "LL": 2, "LR":2, "Chop":3, "Plant": 3}
@@ -72,7 +74,7 @@ class Player(pygame.sprite.Sprite):
 				else:
 					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx][self.mapy-1].AP_cost):
 						self.mapy -= 1
-						if self.scrny*self.level.tiley <= self.level.tiley*self.visibility:
+						if self.scrny*self.level.tiley <= self.level.tiley*self.screen_border:
 							self.bgsig = "D"
 							self.level.move_BG(self.bgsig)	
 						else:
@@ -83,7 +85,7 @@ class Player(pygame.sprite.Sprite):
 				else:
 					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx][self.mapy+1].AP_cost):
 						self.mapy += 1
-						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))):
+						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.screen_border+1))):
 							self.bgsig = "U"
 							self.level.move_BG(self.bgsig)	
 						else:
@@ -94,7 +96,7 @@ class Player(pygame.sprite.Sprite):
 				else:
 					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy].AP_cost):
 						self.mapx -= 1
-						if self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
+						if self.scrnx*self.level.tilex <= self.level.tilex*self.screen_border:
 							self.bgsig = "R"
 							self.level.move_BG(self.bgsig)	
 						else:
@@ -105,7 +107,7 @@ class Player(pygame.sprite.Sprite):
 				else:
 					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy].AP_cost):
 						self.mapx += 1
-						if self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
+						if self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.screen_border+1))):
 							self.bgsig = "L"
 							self.level.move_BG(self.bgsig)	
 						else:
@@ -117,7 +119,7 @@ class Player(pygame.sprite.Sprite):
 					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy-1].AP_cost):
 						self.mapx -= 1
 						self.mapy -= 1
-						if self.scrny*self.level.tiley <= self.level.tiley*self.visibility or self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
+						if self.scrny*self.level.tiley <= self.level.tiley*self.screen_border or self.scrnx*self.level.tilex <= self.level.tilex*self.screen_border:
 							self.bgsig = "LR"
 							self.level.move_BG(self.bgsig)	
 						else:
@@ -129,7 +131,7 @@ class Player(pygame.sprite.Sprite):
 					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy-1].AP_cost):
 						self.mapx += 1
 						self.mapy -= 1
-						if self.scrny*self.level.tiley <= self.level.tiley*self.visibility or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
+						if self.scrny*self.level.tiley <= self.level.tiley*self.screen_border or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.screen_border+1))):
 							self.bgsig = "LL"
 							self.level.move_BG(self.bgsig)	
 						else:
@@ -141,7 +143,7 @@ class Player(pygame.sprite.Sprite):
 					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy+1].AP_cost):
 						self.mapx -= 1
 						self.mapy += 1
-						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))) or self.scrnx*self.level.tilex <= self.level.tilex*self.visibility:
+						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.screen_border+1))) or self.scrnx*self.level.tilex <= self.level.tilex*self.screen_border:
 							self.bgsig = "UR"
 							self.level.move_BG(self.bgsig)	
 						else:
@@ -153,7 +155,7 @@ class Player(pygame.sprite.Sprite):
 					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy+1].AP_cost):
 						self.mapx += 1
 						self.mapy += 1
-						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.visibility+1))) or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.visibility+1))):
+						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.screen_border+1))) or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.screen_border+1))):
 							self.bgsig = "UL"
 							self.level.move_BG(self.bgsig)	
 						else:
@@ -240,9 +242,11 @@ class Player(pygame.sprite.Sprite):
 				self.HP_c = self.HP_max
 				
 			if item.flavor == 'telescope':
-				self.visibility += 1
-				if self.visibility > 4:
-					self.visibility = 4
+				#self.visibility += 1
+				#if self.visibility > 4:
+				#	self.visibility = 4
+				self.televis = 3
+				self.screen_border = 3
 				self.inventory['telescope'] += 1
 				
 			if item.flavor == 'canteen':
