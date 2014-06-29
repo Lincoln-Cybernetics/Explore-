@@ -17,20 +17,23 @@ class Game(object):
 		self.counter = 0
 		self.xmax = 30
 		self.ymax = 30
-		self.mapology = 'Proced1'
+		self.mapology = 'Random'
 		self.screen = screen
 		
-		#spritesheet dis-aggregator
+		#spritesheet dis-aggregators
 		self.tilex = 100
 		self.tiley = 100
 		self.sheet = pygame.image.load('exp100.png').convert()
 		self.animator = ss.Cutout(self.sheet, self.tilex, self.tiley)
+		self.sheet = pygame.image.load('Explm.png').convert()
+		self.landgrabber = ss.Cutout(self.sheet,200,200)
 		
 		#sprite groups
 		self.players = pygame.sprite.Group()
 		self.mobs = pygame.sprite.Group()
-		#self.mymobs = []
+		
 		self.terrain = pygame.sprite.Group()
+		self.landmarks = pygame.sprite.Group()
 		self.mymap = []
 		self.space = pygame.sprite.Group()
 		self.items = pygame.sprite.Group()
@@ -61,6 +64,10 @@ class Game(object):
 		mygem = item.Item(self, self.items)
 		mygem.set_type(0)
 		
+		mymark = tile.Landmark(self, self.landmarks)
+		mymark.set_type(1)
+		mymid = tile.Landmark(self, self.landmarks)
+		mymid.set_type(0)
 		
 		if maptype == 'Basic':
 			myaxe = item.Item(self, self.items)
@@ -96,16 +103,16 @@ class Game(object):
 					
 				if maptype == 'Proced1':
 					#grassland/trees
-					common = [1,2,3,13]
-					uncommon = [4,5,6,7]
-					rare = [8,9,10]
-					vrare = [12,15]
+					#common = [1,2,3,13]
+					#uncommon = [4,5,6,7]
+					#rare = [8,9,10]
+					#vrare = [12,15]
 					
 					#desert
-					#common = [8]
-					#uncommon = [7,16]
-					#rare = [9]
-					#vrare = [1,2]
+					common = [8]
+					uncommon = [7,16]
+					rare = [9]
+					vrare = [1,2]
 					
 					#Forest
 					#common = [3,4,5,9]
@@ -148,12 +155,16 @@ class Game(object):
 			mydude.spawn(5,1)
 			myscope.spawn(3,2)
 			mycant.spawn(10,10)
+			mymark.spawn(8,8)
 			self.player1.spawn(3,3)
 			self.player1.position_scrn(6,3)
 			self.normalize(3,3)
 			
 		if maptype == 'Random' or maptype == 'Proced1':
 			mygem.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
+			mymark.spawn(random.randrange(x-3)+1, random.randrange(y-3)+1)
+			mymid.spawn(random.randrange(x-3)+1, random.randrange(y-3)+1)
+			
 			for itemo in self.items:
 				itemo.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			for mobbo in self.mobs:
@@ -163,7 +174,8 @@ class Game(object):
 			self.player1.spawn(rnumx,rnumy)
 			self.player1.position_scrn(6,3)
 			self.normalize(rnumx,rnumy)	
-			
+		
+		self.background.add(self.landmarks)	
 		self.background.add(self.items)
 		self.background.add(self.mobs)
 		self.fightable.add(self.mobs)
@@ -306,12 +318,19 @@ class Game(object):
 				land.draw()
 			if land in self.revealed:
 				land.draw()
+				
 		for item in self.items:
 			if item in self.revealed:
 				item.draw()
+				
 		for mob in self.mobs:
 			if mob in self.revealed:
 				mob.draw()
+				
+		for lm in self.landmarks:
+			if lm in self.revealed:
+				lm.draw()
+				
 		self.space.draw(screen)
 		self.players.draw(screen)
 		screen.blit(text, (0,0))
@@ -353,15 +372,22 @@ class Game(object):
 				if tile in self.fogged:
 					self.fogged.remove(tile)
 					tile.set_type(tile.flavnum)
+					
 		for thing in self.items:
 			self.revealed.remove(thing)
 			for land in pygame.sprite.spritecollide(thing,self.revealed, False):
 				self.revealed.add(thing)
+				
 		for villian in self.mobs:
 			if villian in self.revealed:
 				self.revealed.remove(villian)
 			for land in pygame.sprite.spritecollide(villian,self.revealed, False):
 				self.revealed.add(villian)
+				
+		for lndmrk in self.landmarks:
+			
+			for land in pygame.sprite.spritecollide(lndmrk,self.revealed, False):
+				self.revealed.add(lndmrk)
 	
 	def normalize(self,x,y):
 		#normalize x
@@ -389,6 +415,8 @@ class Game(object):
 			item.position(item.mapx+norx, item.mapy+nory)
 		for mob in self.mobs:
 			mob.position(mob.mapx+norx, mob.mapy+nory)
+		for lm in self.landmarks:
+			lm.position(lm.mapx+norx, lm.mapy+nory)
 			
 
 ########################################################################
