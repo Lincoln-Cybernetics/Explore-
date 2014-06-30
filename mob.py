@@ -14,8 +14,10 @@ class Mob(pygame.sprite.Sprite):
 		
 		#base image
 		self.level.animator.set_Img(4,5)
+		self.level.animator.set_colorkey(True,(255,0,0))
 		self.image = self.level.animator.get_Img().convert()
-		self.image.set_colorkey((255,0,0))
+		
+		
 		
 		
 		
@@ -94,8 +96,9 @@ class Mob(pygame.sprite.Sprite):
 				
 		#set the sprite image
 		self.level.animator.set_Img(xind,yind)
+		self.level.animator.set_colorkey(True,(255,0,0))
 		self.image = self.level.animator.get_Img().convert()
-		self.image.set_colorkey((255,0,0))
+		
 		
 	def set_type(self, personality):
 			self.brain.set_personality(personality)
@@ -154,52 +157,60 @@ class Mob(pygame.sprite.Sprite):
 		pmy = self.mapy
 		
 		if cmd == "U":
-			if self.level.mymap[self.mapx][self.mapy-1] in self.unpassable:
+			target = self.level.mymap[self.mapx][self.mapy-1]
+			if target in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx][self.mapy-1].AP_cost):
+				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("U")
 		if cmd == "D":
-			if self.level.mymap[self.mapx][self.mapy+1] in self.unpassable:
+			target = self.level.mymap[self.mapx][self.mapy+1]
+			if target in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx][self.mapy+1].AP_cost):
+				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("D")
 		if cmd == "L":
-			if self.level.mymap[self.mapx-1][self.mapy] in self.unpassable:
+			target = self.level.mymap[self.mapx-1][self.mapy]
+			if target in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy].AP_cost):
+				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("L")
 		if cmd == "R":
-			if self.level.mymap[self.mapx+1][self.mapy] in self.unpassable:
+			target = self.level.mymap[self.mapx+1][self.mapy]
+			if target in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy].AP_cost):
+				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("R")
 		if cmd == "UL":
-			if self.level.mymap[self.mapx-1][self.mapy-1] in self.unpassable:
+			target = self.level.mymap[self.mapx-1][self.mapy-1]
+			if target in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy-1].AP_cost):
+				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("UL")
 		if cmd == "UR":
-			if self.level.mymap[self.mapx+1][self.mapy-1] in self.unpassable:
+			target = self.level.mymap[self.mapx+1][self.mapy-1]
+			if target in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy-1].AP_cost):
+				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("UR")
 		if cmd == "LL":
-			if self.level.mymap[self.mapx-1][self.mapy+1] in self.unpassable:
+			target = self.level.mymap[self.mapx-1][self.mapy+1]
+			if target in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy+1].AP_cost):
+				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("LL")
 		if cmd == "LR":
-			if self.level.mymap[self.mapx+1][self.mapy+1] in self.unpassable:
+			target = self.level.mymap[self.mapx+1][self.mapy+1]
+			if target in self.unpassable:
 				pass
 			else:
-				if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy+1].AP_cost):
+				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("LR")
 			
 		self.spacecheck()
