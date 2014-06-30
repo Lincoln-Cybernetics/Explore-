@@ -7,8 +7,9 @@ class Item(pygame.sprite.Sprite):
 		self.level = level
 		#base image
 		self.level.animator.set_Img(6,0)
+		self.level.animator.set_colorkey((255,0,0))
 		self.image = self.level.animator.get_Img().convert()
-		self.image.set_colorkey((255,0,0))
+		
 		
 		#type
 		self.flavor_saver = ['gem', 'axe', 'sammich', 'telescope', 'canteen']
@@ -48,8 +49,9 @@ class Item(pygame.sprite.Sprite):
 			yind = 4
 			
 		self.level.animator.set_Img(xind,yind)
+		self.level.animator.set_colorkey(True,(255,0,0))
 		self.image = self.level.animator.get_Img().convert()
-		self.image.set_colorkey((255,0,0))
+	
 
 
 	def set_Index(self, x, y):
