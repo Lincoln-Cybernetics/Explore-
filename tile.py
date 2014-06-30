@@ -191,10 +191,10 @@ class Landmark(pygame.sprite.Sprite):
 		self.scrnx = x
 		self.scrny = y
 		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
-		self.level.mymap[self.mapy][self.mapx].set_type(self.tertype[self.flavnum])
-		self.level.mymap[self.mapy][self.mapx+1].set_type(self.tertype[self.flavnum])
-		self.level.mymap[self.mapy+1][self.mapx].set_type(self.tertype[self.flavnum])
-		self.level.mymap[self.mapy+1][self.mapx+1].set_type(self.tertype[self.flavnum])
+		self.level.mymap[self.mapx][self.mapy].set_type(self.tertype[self.flavnum])
+		self.level.mymap[self.mapx+1][self.mapy].set_type(self.tertype[self.flavnum])
+		self.level.mymap[self.mapx][self.mapy+1].set_type(self.tertype[self.flavnum])
+		self.level.mymap[self.mapx+1][self.mapy+1].set_type(self.tertype[self.flavnum])
 		
 	def position(self,x,y):
 		self.scrnx = x
