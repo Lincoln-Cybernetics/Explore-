@@ -91,9 +91,9 @@ class Game(object):
 				mobbo.set_species(random.randrange(2))
 		
 		
-		for b in range(y):
-			maprow = []
-			for a in range(x):
+		for a in range(x):
+			mapcol = []
+			for b in range(y):
 				
 				if maptype == 'Basic':
 					landtype = 1
@@ -144,9 +144,9 @@ class Game(object):
 						#self.player1.unpassable.add(acre)
 				acre.spawn(a, b)
 				self.background.add(acre)
-				maprow.append(acre)
+				mapcol.append(acre)
 				
-			self.mymap.append( maprow )
+			self.mymap.append( mapcol )
 		
 		if maptype == 'Basic':
 			mygem.spawn(5,5)
@@ -180,6 +180,8 @@ class Game(object):
 		self.background.add(self.mobs)
 		self.fightable.add(self.mobs)
 		
+	def desertify(self):
+		pass
 		
 	def iterate_Game(self):
 		while self.Game_Over == 0:
@@ -376,13 +378,15 @@ class Game(object):
 		for thing in self.items:
 			self.revealed.remove(thing)
 			for land in pygame.sprite.spritecollide(thing,self.revealed, False):
-				self.revealed.add(thing)
+				if land in self.terrain:
+					self.revealed.add(thing)
 				
 		for villian in self.mobs:
 			if villian in self.revealed:
 				self.revealed.remove(villian)
 			for land in pygame.sprite.spritecollide(villian,self.revealed, False):
-				self.revealed.add(villian)
+				if land in self.terrain:
+					self.revealed.add(villian)
 				
 		for lndmrk in self.landmarks:
 			
