@@ -15,8 +15,8 @@ class Player(pygame.sprite.Sprite):
 		self.mapx = 0
 		self.scrny = 0
 		self.mapy = 0
+		
 		#reference of old location data
-		#self.prevrect = self.rect.copy()
 		self.pxs = self.scrnx
 		self.pys = self.scrny
 		self.pmx = self.mapx
@@ -45,6 +45,7 @@ class Player(pygame.sprite.Sprite):
 		self.Alive = True
 		self.HYD_max = 10
 		self.HYD_c = 10
+		self.skipflag = False
 		
 	def spawn(self,x,y):
 		self.mapx = x
@@ -67,56 +68,84 @@ class Player(pygame.sprite.Sprite):
 			self.pmx = self.mapx
 			self.pmy = self.mapy
 			self.bgsig = ""
+			self.skipflag = False
 			
+			#Move Up
 			if cmd == "U":
-				if self.level.mymap[self.mapx][self.mapy-1] in self.unpassable:
+				target = self.level.mymap[self.mapx][self.mapy-1]
+				#print target.AP_cost, target.flavor
+				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx][self.mapy-1].AP_cost):
+					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 						self.mapy -= 1
 						if self.scrny*self.level.tiley <= self.level.tiley*self.screen_border:
 							self.bgsig = "D"
 							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("U")
+					else:
+						self.skipflag = True
+					
+			#Move Down	
 			if cmd == "D":
-				if self.level.mymap[self.mapx][self.mapy+1] in self.unpassable:
+				target = self.level.mymap[self.mapx][self.mapy+1]
+				#print target.AP_cost, target.flavor
+				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx][self.mapy+1].AP_cost):
+					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 						self.mapy += 1
 						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.screen_border+1))):
 							self.bgsig = "U"
 							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("D")
+					else:
+						self.skipflag = True
+						
+			#Move Left
 			if cmd == "L":
-				if self.level.mymap[self.mapx-1][self.mapy] in self.unpassable:
+				target = self.level.mymap[self.mapx-1][self.mapy]
+				#print target.AP_cost, target.flavor
+				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy].AP_cost):
+					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 						self.mapx -= 1
 						if self.scrnx*self.level.tilex <= self.level.tilex*self.screen_border:
 							self.bgsig = "R"
 							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("L")
+					else:
+						self.skipflag = True
+						
+			#Move Right
 			if cmd == "R":
-				if self.level.mymap[self.mapx+1][self.mapy] in self.unpassable:
+				target = self.level.mymap[self.mapx+1][self.mapy]
+				#print target.AP_cost, target.flavor
+				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy].AP_cost):
+					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 						self.mapx += 1
 						if self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.screen_border+1))):
 							self.bgsig = "L"
 							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("R")
+					else:
+						self.skipflag = True
+						
+			#Move Up and Left
 			if cmd == "UL":
-				if self.level.mymap[self.mapx-1][self.mapy-1] in self.unpassable:
+				target = self.level.mymap[self.mapx-1][self.mapy-1]
+				#print target.AP_cost, target.flavor
+				if  target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy-1].AP_cost):
+					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 						self.mapx -= 1
 						self.mapy -= 1
 						if self.scrny*self.level.tiley <= self.level.tiley*self.screen_border or self.scrnx*self.level.tilex <= self.level.tilex*self.screen_border:
@@ -124,11 +153,17 @@ class Player(pygame.sprite.Sprite):
 							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("UL")
+					else:
+						self.skipflag = True
+						
+			#Move Up and Right
 			if cmd == "UR":
-				if self.level.mymap[self.mapx+1][self.mapy-1] in self.unpassable:
+				target = self.level.mymap[self.mapx+1][self.mapy-1]
+				#print target.AP_cost, target.flavor
+				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy-1].AP_cost):
+					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 						self.mapx += 1
 						self.mapy -= 1
 						if self.scrny*self.level.tiley <= self.level.tiley*self.screen_border or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.screen_border+1))):
@@ -136,11 +171,17 @@ class Player(pygame.sprite.Sprite):
 							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("UR")
+					else: 
+						self.skipflag = True
+						
+			#Move Down and Left
 			if cmd == "LL":
-				if self.level.mymap[self.mapx-1][self.mapy+1] in self.unpassable:
+				target = self.level.mymap[self.mapx-1][self.mapy+1]
+				#print target.AP_cost, target.flavor
+				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx-1][self.mapy+1].AP_cost):
+					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 						self.mapx -= 1
 						self.mapy += 1
 						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.screen_border+1))) or self.scrnx*self.level.tilex <= self.level.tilex*self.screen_border:
@@ -148,11 +189,17 @@ class Player(pygame.sprite.Sprite):
 							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("LL")
+					else:
+						self.skipflag = True
+						
+			#Move Down and Right
 			if cmd == "LR":
-				if self.level.mymap[self.mapx+1][self.mapy+1] in self.unpassable:
+				target = self.level.mymap[self.mapx+1][self.mapy+1]
+				#print target.AP_cost, target.flavor
+				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+self.level.mymap[self.mapx+1][self.mapy+1].AP_cost):
+					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 						self.mapx += 1
 						self.mapy += 1
 						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.screen_border+1))) or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.screen_border+1))):
@@ -160,22 +207,33 @@ class Player(pygame.sprite.Sprite):
 							self.level.move_BG(self.bgsig)	
 						else:
 							self.move("LR")
-					
+					else:
+						self.skipflag = True
+				
+			#Chop Trees	
 			if cmd == "Chop":
 				choppable = { "Dense Woods":4, "Medium Woods":3, "Light Woods": 2, "Grass and Trees":1 }
 				#print self.mapx, self.mapy
 				if self.level.mymap[self.mapy][self.mapx].flavor in choppable:
 					if self.reckonAP(self.APcost[cmd]):
-						self.inventory['wood'] += self.level.mymap[self.mapy][self.mapx].woodpoints
-						self.level.mymap[self.mapy][self.mapx].set_type(choppable[self.level.mymap[self.mapy][self.mapx].flavor])
+						self.inventory['wood'] += self.level.mymap[self.mapx][self.mapy].woodpoints
+						self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
+					else:
+						self.skipflag = True
 			
+			#Plant Trees
 			if cmd == "Plant":
 				if self.level.mymap[self.mapy][self.mapx].flavor == "Grassland":
 					if self.inventory['wood'] > 0:
 						if self.reckonAP(self.APcost[cmd]):
-							self.level.mymap[self.mapy][self.mapx].set_type(2)
+							self.level.mymap[self.mapx][self.mapy].set_type(2)
 							self.inventory['wood'] -= 1
-							
+						else:
+							self.skipflag = True
+				
+			#Do Nothing			
+			if cmd == "":
+				pass
 							
 			if self.AP_c <= 0:
 				self.level.Turn_Over = 1
@@ -189,10 +247,12 @@ class Player(pygame.sprite.Sprite):
 				self.mapy = self.pmy	
 				if self.bgsig != "":
 					bs = {"U":"D", "D":"U", "L":"R", "R":"L", "UL":"LR", "LR":"UL", "UR":"LL", "LL":"UR"}
-					self.level.move_BG(bs[self.bgsig])	
-			self.spacecheck()
-			self.itemcheck()
-			self.hydrate()
+					self.level.move_BG(bs[self.bgsig])
+					
+			if self.skipflag == False:	
+				self.spacecheck()
+				self.itemcheck()
+				self.hydrate()
 				
 	def move(self, vec):
 		if vec == "U":
@@ -266,7 +326,9 @@ class Player(pygame.sprite.Sprite):
 			elif land.flavor == "Oasis":
 				self.HYD_c += 10
 		if self.HYD_c <= 0:
-			self.level.Game_Over = 4
+			self.HP_c -= 1
+			if self.HP_c <= 0:
+				self.level.Game_Over = 4
 		if self.HYD_c > self.HYD_max:
 			self.HYD_c = self.HYD_max
 
