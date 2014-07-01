@@ -216,7 +216,7 @@ class Player(pygame.sprite.Sprite):
 				#print self.mapx, self.mapy
 				if self.level.mymap[self.mapy][self.mapx].flavor in choppable:
 					if self.reckonAP(self.APcost[cmd]):
-						self.inventory['wood'] += self.level.mymap[self.mapx][self.mapy].woodpoints
+						self.inventory['wood'] += self.level.mymap[self.mapx][self.mapy].wood_level
 						self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
 					else:
 						self.skipflag = True
@@ -317,6 +317,7 @@ class Player(pygame.sprite.Sprite):
 				
 	def hydrate(self):
 		for land in pygame.sprite.spritecollide(self, self.level.terrain, False):
+			#print land.desert_level, land.desert_points
 			if land.flavor == "Scrub":
 				self.HYD_c -= 1
 			elif land.flavor == "Dunes":
