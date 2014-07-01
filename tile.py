@@ -11,6 +11,9 @@ class Land(pygame.sprite.Sprite):
 		self.image = self.level.animator.get_Img().convert()
 		
 		
+		#spritegroups
+		self.neighbors = pygame.sprite.Group()
+		
 		#location
 		self.mapx = 0 
 		self.mapy = 0 
@@ -18,14 +21,17 @@ class Land(pygame.sprite.Sprite):
 		self.scrny = 0
 		
 		#harvestable
-		self.woodpoints = 0
+		self.wood_level = 0
+		
+		#desertification
+		self.desert_level = 0
+		self.desert_points = 0
 		
 		#type
 		self.flavor_saver = ["Void", "Grassland", "Grass and Trees", "Light Woods", "Medium Woods", "Dense Woods", "Hills", "Scrub", "Dunes",\
 			"Gravel", "Mountain", "Extinct Volcano", "Active Volcano", "Water", "Ocean", "Whirlpool","Oasis"]
 		
-		#self.AP_markup = {"Void":0, "Grassland":0, "Grass and Trees":0, "Light Woods":1, "Medium Woods":2, "Dense Woods":3, "Hills":1, "Scrub":1, "Dunes":2,\
-		#	"Gravel":1, "Mountain":2, "Extinct Volcano":2, "Active Volcano":3, "Water":2, "Ocean":3, "Whirlpool":3, "Oasis":2}	
+	
 		
 		self.AP_cost = 0
 		self.flavor = "Void"
@@ -40,9 +46,11 @@ class Land(pygame.sprite.Sprite):
 		
 	
 		
-	def set_type(self, land):
+	def set_type(self, land, reset= False):
 		self.flavor = self.flavor_saver[land]
 		self.flavnum = land
+		if reset:
+			self.desert_points = 0
 		#Void
 		if land == 0:
 			xind = 0
@@ -58,25 +66,25 @@ class Land(pygame.sprite.Sprite):
 			xind = 0
 			yind = 2
 			self.AP_cost = 0
-			self.woodpoints = 1
+			self.wood_level = 1
 		#Light Woods
 		if land == 3:
 			xind = 4
 			yind = 0
 			self.AP_cost = 1
-			self.woodpoints = 2
+			self.wood_level = 2
 		#Medium Woods
 		if land == 4:
 			xind = 4
 			yind = 1
 			self.AP_cost = 2
-			self.woodpoints = 3
+			self.wood_level = 3
 		#Dense Woods
 		if land == 5:
 			xind = 4
 			yind = 2
 			self.AP_cost = 3
-			self.woodpoints = 4
+			self.wood_level = 4
 		#Hills
 		if land == 6:
 			xind = 0
@@ -87,11 +95,13 @@ class Land(pygame.sprite.Sprite):
 			xind = 1
 			yind = 0
 			self.AP_cost = 1
+			self.desert_level = 1
 		#Dunes
 		if land == 8:
 			xind = 1
 			yind = 1
 			self.AP_cost = 2
+			self.desert_level = 2
 		#Gravel
 		if land == 9:
 			xind = 2
@@ -117,6 +127,7 @@ class Land(pygame.sprite.Sprite):
 			xind = 3
 			yind = 0
 			self.AP_cost = 2
+			self.desert_level = -6
 		#Ocean
 		if land == 14:
 			xind = 3
@@ -132,16 +143,21 @@ class Land(pygame.sprite.Sprite):
 			xind = 1
 			yind = 2
 			self.AP_cost = 2
+			self.desert_level = 1
 			
 		self.level.animator.set_Img(xind,yind)
 		self.image = self.level.animator.get_Img().convert()
 		#self.AP_cost = self.AP_markup[self.flavor]
 		
 	def fade(self):
+		
 		self.level.animator.set_Img(0,5)
 		fadeimg = self.level.animator.get_Img().convert()
 		fadeimg.set_alpha(128)
 		self.image.blit(fadeimg, (0,0))
+		
+	def inc_dp(self, num):
+		self.desert_points += num
 		
 	def set_Index(self, x, y):
 		self.scrnx = x
