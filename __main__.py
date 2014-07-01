@@ -17,7 +17,7 @@ class Game(object):
 		self.counter = 0
 		self.xmax = 30
 		self.ymax = 30
-		self.mapology = 'Random'
+		self.mapology = 'Basic'
 		self.screen = screen
 		
 		#spritesheet dis-aggregators
@@ -46,6 +46,10 @@ class Game(object):
 		self.player1 = player.Player(self, self.players)
 		self.player1.add(self.fightable)
 		
+		#terrain gen
+		self.desertified = ["Grassland", "Grass and Trees", "Scrub", "Water", "Oasis", "Dunes"]
+		self.desert_thresh = { "Grassland" : 10, "Grass and Trees" : 15, "Scrub": 5, "Water": 20, "Oasis": 15, "Dunes": 10}
+		self.desert_conv = { "Grassland" : 7, "Grass and Trees" : 1, "Scrub": 8, "Water": 16, "Oasis": 8, "Dunes":8}
 		
 		
 		self.mapgen(self.xmax,self.ymax,self.mapology)
@@ -103,16 +107,16 @@ class Game(object):
 					
 				if maptype == 'Proced1':
 					#grassland/trees
-					#common = [1,2,3,13]
-					#uncommon = [4,5,6,7]
-					#rare = [8,9,10]
-					#vrare = [12,15]
+					common = [1,2,3,13]
+					uncommon = [4,5,6,7]
+					rare = [8,9,10]
+					vrare = [12,15]
 					
 					#desert
-					common = [8]
-					uncommon = [7,16]
-					rare = [9]
-					vrare = [1,2]
+					#common = [8]
+					#uncommon = [7,16]
+					#rare = [9]
+					#vrare = [1,2]
 					
 					#Forest
 					#common = [3,4,5,9]
@@ -138,7 +142,7 @@ class Game(object):
 					for mobbo in self.mobs:
 						mobbo.unpassable.add(acre)
 				else:
-					acre.set_type(landtype)
+					acre.set_type(landtype, True)
 					#if landtype == 12 or landtype == 15:
 					#	pass
 						#self.player1.unpassable.add(acre)
@@ -155,7 +159,7 @@ class Game(object):
 			mydude.spawn(5,1)
 			myscope.spawn(3,2)
 			mycant.spawn(10,10)
-			mymark.spawn(8,8)
+			mymid.spawn(8,8)
 			self.player1.spawn(3,3)
 			self.player1.position_scrn(6,3)
 			self.normalize(3,3)
@@ -180,8 +184,29 @@ class Game(object):
 		self.background.add(self.mobs)
 		self.fightable.add(self.mobs)
 		
+		for land in self.terrain:
+			ogbow = land.neighbors
+			if land in self.space:
+				pass
+			else:				
+				for wa in range(3):
+					for ha in range(3):
+						ogbow.add(self.mymap[wa-1][ha-1])
+						
+						
 	def desertify(self):
-		pass
+		
+		for place in self.terrain:
+			dpcount = 0
+			for neighbor in place.neighbors:
+				dpcount += neighbor.desert_level
+			place.desert_points += dpcount
+				#place.desert_points = place.desert_points + neighbor.desert_level
+			if dpcount > 0:
+				print dpcount
+			if place.flavor in self.desertified:
+				if place.desert_points > self.desert_thresh[place.flavor]:
+					place.set_type(self.desert_conv[place.flavor], True)
 		
 	def iterate_Game(self):
 		while self.Game_Over == 0:
@@ -251,6 +276,7 @@ class Game(object):
 					if event.type == pygame.KEYDOWN and  (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER):
 						self.Turn_Over = 0
 						break
+			self.desertify()
 			self.display()
 				
 				
