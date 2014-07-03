@@ -61,6 +61,7 @@ class Player(pygame.sprite.Sprite):
 		
 
 	def command(self, cmd):
+			#print cmd
 			#reference of old location data
 			self.prevrect = self.rect.copy()
 			self.pxs = self.scrnx
@@ -213,21 +214,23 @@ class Player(pygame.sprite.Sprite):
 			#Chop Trees	
 			if cmd == "Chop":
 				choppable = { "Dense Woods":4, "Medium Woods":3, "Light Woods": 2, "Grass and Trees":1 }
-				#print self.mapx, self.mapy
-				if self.level.mymap[self.mapy][self.mapx].flavor in choppable:
-					if self.reckonAP(self.APcost[cmd]):
-						self.inventory['wood'] += self.level.mymap[self.mapx][self.mapy].wood_level
-						self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
-					else:
-						self.skipflag = True
+				if self.inventory['axe'] > 0:
+					if self.level.mymap[self.mapx][self.mapy].flavor in choppable:
+						if self.reckonAP(self.APcost[cmd]):
+							self.inventory['wood'] += self.level.mymap[self.mapx][self.mapy].wood_level
+							self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
+							self.level.mymap[self.mapx][self.mapy].reset()
+						else:
+							self.skipflag = True
 			
 			#Plant Trees
 			if cmd == "Plant":
-				if self.level.mymap[self.mapy][self.mapx].flavor == "Grassland":
+				if self.level.mymap[self.mapx][self.mapy].flavor == "Grassland":
 					if self.inventory['wood'] > 0:
 						if self.reckonAP(self.APcost[cmd]):
 							self.level.mymap[self.mapx][self.mapy].set_type(2)
 							self.inventory['wood'] -= 1
+							self.level.mymap[self.mapx][self.mapy].reset()
 						else:
 							self.skipflag = True
 				
@@ -317,7 +320,7 @@ class Player(pygame.sprite.Sprite):
 				
 	def hydrate(self):
 		for land in pygame.sprite.spritecollide(self, self.level.terrain, False):
-			#print land.desert_level, land.desert_points
+			#print land.wood_level, land.wp
 			if land.flavor == "Scrub":
 				self.HYD_c -= 1
 			elif land.flavor == "Dunes":
