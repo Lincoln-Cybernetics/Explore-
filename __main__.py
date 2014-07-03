@@ -17,7 +17,7 @@ class Game(object):
 		self.counter = 0
 		self.xmax = 30
 		self.ymax = 30
-		self.mapology = 'Basic'
+		self.mapology = 'Proced1'
 		self.screen = screen
 		
 		#spritesheet dis-aggregators
@@ -41,15 +41,15 @@ class Game(object):
 		self.fightable = pygame.sprite.Group()
 		self.revealed = pygame.sprite.Group()
 		self.fogged = pygame.sprite.Group()
+		self.visible = pygame.sprite.Group()
 		
 		#player
 		self.player1 = player.Player(self, self.players)
 		self.player1.add(self.fightable)
 		
-		#terrain gen
-		self.desertified = ["Grassland", "Grass and Trees", "Scrub", "Water", "Oasis", "Dunes"]
-		self.desert_thresh = { "Grassland" : 10, "Grass and Trees" : 15, "Scrub": 5, "Water": 20, "Oasis": 15, "Dunes": 10}
-		self.desert_conv = { "Grassland" : 7, "Grass and Trees" : 1, "Scrub": 8, "Water": 16, "Oasis": 8, "Dunes":8}
+		
+		
+		
 		
 		
 		self.mapgen(self.xmax,self.ymax,self.mapology)
@@ -142,7 +142,8 @@ class Game(object):
 					for mobbo in self.mobs:
 						mobbo.unpassable.add(acre)
 				else:
-					acre.set_type(landtype, True)
+					acre.set_type(landtype)
+					acre.get_image()
 					#if landtype == 12 or landtype == 15:
 					#	pass
 						#self.player1.unpassable.add(acre)
@@ -160,6 +161,8 @@ class Game(object):
 			myscope.spawn(3,2)
 			mycant.spawn(10,10)
 			mymid.spawn(8,8)
+			mymark.spawn(1,1)
+			self.mymap[4][4].set_type(5)
 			self.player1.spawn(3,3)
 			self.player1.position_scrn(6,3)
 			self.normalize(3,3)
@@ -184,29 +187,30 @@ class Game(object):
 		self.background.add(self.mobs)
 		self.fightable.add(self.mobs)
 		
-		for land in self.terrain:
-			ogbow = land.neighbors
-			if land in self.space:
-				pass
-			else:				
-				for wa in range(3):
-					for ha in range(3):
-						ogbow.add(self.mymap[wa-1][ha-1])
-						
-						
-	def desertify(self):
+		for wid in range(x):
+			for hei in range(y):
+				biome = self.mymap[wid][hei]
+				if biome in self.space:
+					pass
+				else:
+					for wa in range(3):
+						for ha in range(3):
+							biome.neighbors.add(self.mymap[wid+wa-1][hei+ha-1])
+			
 		
+						
+						
+	def desertify(self):	
 		for place in self.terrain:
-			dpcount = 0
-			for neighbor in place.neighbors:
-				dpcount += neighbor.desert_level
-			place.desert_points += dpcount
-				#place.desert_points = place.desert_points + neighbor.desert_level
-			if dpcount > 0:
-				print dpcount
-			if place.flavor in self.desertified:
-				if place.desert_points > self.desert_thresh[place.flavor]:
-					place.set_type(self.desert_conv[place.flavor], True)
+			place.desert_check()
+			
+	def grow_forest(self):
+		for place in self.terrain:
+			place.forest_check()
+			
+	def advance_lands(self):
+		for place in self.terrain:
+			place.advance()
 		
 	def iterate_Game(self):
 		while self.Game_Over == 0:
@@ -276,7 +280,10 @@ class Game(object):
 					if event.type == pygame.KEYDOWN and  (event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER):
 						self.Turn_Over = 0
 						break
+			
 			self.desertify()
+			self.grow_forest()
+			self.advance_lands()
 			self.display()
 				
 				
@@ -340,24 +347,20 @@ class Game(object):
 		
 		# Blit everything to the screen
 		screen.set_clip(0,0,self.winx,self.winy)
-		#self.revealed.draw(screen)
-		for land in self.terrain:
-			if land in self.fogged:
-				land.draw()
-			if land in self.revealed:
-				land.draw()
-				
-		for item in self.items:
-			if item in self.revealed:
-				item.draw()
-				
-		for mob in self.mobs:
-			if mob in self.revealed:
-				mob.draw()
-				
-		for lm in self.landmarks:
-			if lm in self.revealed:
-				lm.draw()
+		self.fogged.draw(screen)
+		for thing in self.visible:
+			if thing in self.terrain:
+				thing.draw()
+		for thing in self.visible:
+			if thing in self.items:
+				thing.draw()
+		for thing in self.visible:
+			if thing in self.mobs:
+				thing.draw()
+		for thing in self.visible:
+			if thing in self.landmarks:
+				thing.draw()
+		
 				
 		self.space.draw(screen)
 		self.players.draw(screen)
@@ -389,35 +392,39 @@ class Game(object):
 		self.players.draw(screen)
 
 	def showBG(self):
-		
 		for tile in self.terrain:
 			if tile in self.revealed:
-				self.revealed.remove(tile)
+				self.visible.remove(tile)
 				self.fogged.add(tile)
 				tile.fade()
 			if abs(tile.mapx-self.player1.mapx)<= self.player1.visibility and abs(tile.mapy-self.player1.mapy)<= self.player1.visibility:
 				self.revealed.add(tile)
+				self.visible.add(tile)
 				if tile in self.fogged:
 					self.fogged.remove(tile)
-					tile.set_type(tile.flavnum)
+					tile.visify()
+			
 					
 		for thing in self.items:
-			self.revealed.remove(thing)
-			for land in pygame.sprite.spritecollide(thing,self.revealed, False):
+			self.visible.remove(thing)
+			for land in pygame.sprite.spritecollide(thing,self.visible, False):
 				if land in self.terrain:
 					self.revealed.add(thing)
+					self.visible.add(thing)
 				
 		for villian in self.mobs:
-			if villian in self.revealed:
-				self.revealed.remove(villian)
-			for land in pygame.sprite.spritecollide(villian,self.revealed, False):
+			if villian in self.visible:
+				self.visible.remove(villian)
+			for land in pygame.sprite.spritecollide(villian,self.visible, False):
 				if land in self.terrain:
-					self.revealed.add(villian)
+					self.revealed.add(thing)
+					self.visible.add(villian)
 				
 		for lndmrk in self.landmarks:
 			
-			for land in pygame.sprite.spritecollide(lndmrk,self.revealed, False):
-				self.revealed.add(lndmrk)
+			for land in pygame.sprite.spritecollide(lndmrk,self.visible, False):
+				self.revealed.add(thing)
+				self.visible.add(lndmrk)
 	
 	def normalize(self,x,y):
 		#normalize x
