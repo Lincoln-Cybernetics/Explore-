@@ -7,8 +7,12 @@ class Land(pygame.sprite.Sprite):
 		#the game level
 		self.level = level
 		#base image
-		self.level.animator.set_Img(0,5)
+		self.xind = 0
+		self.yind = 5
+		self.level.animator.set_Img(self.xind,self.yind)
 		self.image = self.level.animator.get_Img().convert()
+		self.hidden = self.image
+		self.fog = False
 		
 		
 		#spritegroups
@@ -20,12 +24,21 @@ class Land(pygame.sprite.Sprite):
 		self.scrnx = 0
 		self.scrny = 0
 		
-		#harvestable
+		#forests
 		self.wood_level = 0
+		self.wp = 0
+		self.forest_prone = False
+		self.forest_thresh = {"Grassland" : 400, "Grass and Trees" :200, "Scrub": 800, "Light Woods": 400, "Medium Woods": 400}
+		self.forest_conv = {"Grassland" : 2, "Grass and Trees" : 3, "Scrub": 1, "Light Woods": 4, "Medium Woods": 5}
 		
-		#desertification
+		#deserts
 		self.desert_level = 0
-		self.desert_points = 0
+		self.dp = 0
+		self.desert_prone = False
+		self.desert_thresh = { "Grassland" : 400, "Grass and Trees" : 600, "Scrub": 200, "Water": 800, "Oasis": 600}
+		self.desert_conv = { "Grassland" : 7, "Grass and Trees" : 1, "Scrub": 8, "Water": 16, "Oasis": 8}
+		
+		
 		
 		#type
 		self.flavor_saver = ["Void", "Grassland", "Grass and Trees", "Light Woods", "Medium Woods", "Dense Woods", "Hills", "Scrub", "Dunes",\
@@ -44,120 +57,167 @@ class Land(pygame.sprite.Sprite):
 		self.scrny = y
 		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
 		
-	
+	def reset(self):
 		
-	def set_type(self, land, reset= False):
+		self.dp = 0
+		self.wp = 0
+		
+	def set_type(self, land):
 		self.flavor = self.flavor_saver[land]
 		self.flavnum = land
-		if reset:
-			self.desert_points = 0
+		self.desert_prone = False
+		self.forest_prone = False
 		#Void
 		if land == 0:
-			xind = 0
-			yind = 5
+			self.xind = 0
+			self.yind = 5
 			self.AP_cost = 0
 		#Grassland
 		if land == 1:
-			xind = 0
-			yind = 0
+			self.xind = 0
+			self.yind = 0
 			self.AP_cost = 0
+			self.desert_prone = True
+			self.forest_prone = True
 		#Grassland and Trees
 		if land == 2:
-			xind = 0
-			yind = 2
+			self.xind = 0
+			self.yind = 2
 			self.AP_cost = 0
 			self.wood_level = 1
+			self.desert_prone = True
+			self.forest_prone = True
 		#Light Woods
 		if land == 3:
-			xind = 4
-			yind = 0
+			self.xind = 4
+			self.yind = 0
 			self.AP_cost = 1
 			self.wood_level = 2
+			self.forest_prone = True
 		#Medium Woods
 		if land == 4:
-			xind = 4
-			yind = 1
+			self.xind = 4
+			self.yind = 1
 			self.AP_cost = 2
 			self.wood_level = 3
+			self.forest_prone = True
 		#Dense Woods
 		if land == 5:
-			xind = 4
-			yind = 2
+			self.xind = 4
+			self.yind = 2
 			self.AP_cost = 3
 			self.wood_level = 4
 		#Hills
 		if land == 6:
-			xind = 0
-			yind = 1
+			self.xind = 0
+			self.yind = 1
 			self.AP_cost = 1
 		#Scrub
 		if land == 7:
-			xind = 1
-			yind = 0
+			self.xind = 1
+			self.yind = 0
 			self.AP_cost = 1
 			self.desert_level = 1
+			self.desert_prone = True
+			self.forest_prone = True
 		#Dunes
 		if land == 8:
-			xind = 1
-			yind = 1
+			self.xind = 1
+			self.yind = 1
 			self.AP_cost = 2
 			self.desert_level = 2
 		#Gravel
 		if land == 9:
-			xind = 2
-			yind = 0
+			self.xind = 2
+			self.yind = 0
 			self.AP_cost = 1
 		#Mountain
 		if land == 10:
-			xind = 2
-			yind = 1
+			self.xind = 2
+			self.yind = 1
 			self.AP_cost = 2
 		#Extinct Volcano
 		if land == 11:
-			xind = 2
-			yind = 2
+			self.xind = 2
+			self.yind = 2
 			self.AP_cost = 2
 		#Active Volcano
 		if land == 12:
-			xind = 2
-			yind = 3
+			self.xind = 2
+			self.yind = 3
 			self.AP_cost = 3
 		#Water
 		if land == 13:
-			xind = 3
-			yind = 0
+			self.xind = 3
+			self.yind = 0
 			self.AP_cost = 2
 			self.desert_level = -6
+			self.desert_prone = True
 		#Ocean
 		if land == 14:
-			xind = 3
-			yind = 1
+			self.xind = 3
+			self.yind = 1
 			self.AP_cost = 3
 		#Whirlpool
 		if land == 15:
-			xind = 3
-			yind = 2
+			self.xind = 3
+			self.yind = 2
 			self.AP_cost = 4
 		#Oasis
 		if land == 16:
-			xind = 1
-			yind = 2
+			self.xind = 1
+			self.yind = 2
 			self.AP_cost = 2
 			self.desert_level = 1
+			self.desert_prone = True
 			
-		self.level.animator.set_Img(xind,yind)
+		
+		
+	def get_image(self):
+		self.level.animator.set_Img(self.xind,self.yind)
 		self.image = self.level.animator.get_Img().convert()
-		#self.AP_cost = self.AP_markup[self.flavor]
+		if self.fog == True:
+			self.level.animator.set_Img(0,5)
+			fadeimg = self.level.animator.get_Img().convert()
+			fadeimg.set_alpha(128)
+			self.image.blit(fadeimg, (0,0))
 		
 	def fade(self):
+		if self.fog == False:
+			self.fog = True
+			self.get_image()
+			
 		
-		self.level.animator.set_Img(0,5)
-		fadeimg = self.level.animator.get_Img().convert()
-		fadeimg.set_alpha(128)
-		self.image.blit(fadeimg, (0,0))
+	def visify(self):
+		self.fog = False
+		self.get_image()
 		
-	def inc_dp(self, num):
-		self.desert_points += num
+		
+	def desert_check(self):
+		if self.desert_prone:
+			for zone in self.neighbors:
+				self.dp += zone.desert_level
+				
+	def forest_check(self):
+		if self.forest_prone:
+			for zone in self.neighbors:
+				self.wp += zone.wood_level
+				
+								
+	def advance(self):
+		if self.desert_prone and self.forest_prone:
+			if self.dp > self.desert_thresh[self.flavor] and self.wp > self.forest_thresh[self.flavor]:
+				self.reset()
+				return
+		if self.desert_prone:
+			if self.dp > self.desert_thresh[self.flavor]:
+				self.set_type(self.desert_conv[self.flavor])
+				self.reset()
+		if self.forest_prone:
+			if self.wp > self.forest_thresh[self.flavor]:
+				self.set_type(self.forest_conv[self.flavor])
+				self.reset()
+		#self.get_image()		
 		
 	def set_Index(self, x, y):
 		self.scrnx = x
@@ -208,9 +268,13 @@ class Landmark(pygame.sprite.Sprite):
 		self.scrny = y
 		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
 		self.level.mymap[self.mapx][self.mapy].set_type(self.tertype[self.flavnum])
+		self.level.mymap[self.mapx][self.mapy].get_image()
 		self.level.mymap[self.mapx+1][self.mapy].set_type(self.tertype[self.flavnum])
+		self.level.mymap[self.mapx+1][self.mapy].get_image()
 		self.level.mymap[self.mapx][self.mapy+1].set_type(self.tertype[self.flavnum])
+		self.level.mymap[self.mapx][self.mapy+1].get_image()
 		self.level.mymap[self.mapx+1][self.mapy+1].set_type(self.tertype[self.flavnum])
+		self.level.mymap[self.mapx+1][self.mapy+1].get_image()
 		
 	def position(self,x,y):
 		self.scrnx = x
