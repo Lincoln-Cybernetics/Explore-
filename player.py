@@ -15,6 +15,7 @@ class Player(pygame.sprite.Sprite):
 		self.mapx = 0
 		self.scrny = 0
 		self.mapy = 0
+		#self.myloc = self.level.mymap[self.mapx][self.mapy]
 		
 		#reference of old location data
 		self.pxs = self.scrnx
@@ -28,7 +29,7 @@ class Player(pygame.sprite.Sprite):
 		
 		#player stats
 		self.visibility = 1
-		self.televis = 1
+		self.televis = 0
 		self.screen_border = 1
 		self.AP_max = 10
 		self.AP_c = 10
@@ -50,6 +51,7 @@ class Player(pygame.sprite.Sprite):
 	def spawn(self,x,y):
 		self.mapx = x
 		self.mapy = y
+		self.myloc = self.level.mymap[self.mapx][self.mapy]
 		
 		
 	def position_scrn(self,x,y):
@@ -63,6 +65,7 @@ class Player(pygame.sprite.Sprite):
 	def command(self, cmd):
 			#print cmd
 			#reference of old location data
+			self.myloc = self.level.mymap[self.mapx][self.mapy]
 			self.prevrect = self.rect.copy()
 			self.pxs = self.scrnx
 			self.pys = self.scrny
@@ -237,10 +240,6 @@ class Player(pygame.sprite.Sprite):
 			#Do Nothing			
 			if cmd == "":
 				pass
-							
-			if self.AP_c <= 0:
-				self.level.Turn_Over = 1
-			
 			
 			if self.mobcheck() == False:
 				self.rect = self.prevrect
@@ -251,11 +250,15 @@ class Player(pygame.sprite.Sprite):
 				if self.bgsig != "":
 					bs = {"U":"D", "D":"U", "L":"R", "R":"L", "UL":"LR", "LR":"UL", "UR":"LL", "LL":"UR"}
 					self.level.move_BG(bs[self.bgsig])
+			
+			self.myloc = self.level.mymap[self.mapx][self.mapy]
 					
-			if self.skipflag == False:	
+			if self.skipflag == False:
+				self.mountainview()	
 				self.spacecheck()
 				self.itemcheck()
 				self.hydrate()
+				self.TOcheck()
 				
 	def move(self, vec):
 		if vec == "U":
@@ -290,6 +293,7 @@ class Player(pygame.sprite.Sprite):
 		
 	def spacecheck(self):
 		for space in pygame.sprite.spritecollide(self, self.level.space, False):
+			self.skipflag = True
 			self.level.Game_Over = 1
 		
 		
@@ -308,7 +312,7 @@ class Player(pygame.sprite.Sprite):
 				#self.visibility += 1
 				#if self.visibility > 4:
 				#	self.visibility = 4
-				self.televis = 3
+				self.televis = 2
 				self.screen_border = 3
 				self.inventory['telescope'] += 1
 				
@@ -335,6 +339,36 @@ class Player(pygame.sprite.Sprite):
 				self.level.Game_Over = 4
 		if self.HYD_c > self.HYD_max:
 			self.HYD_c = self.HYD_max
+			
+	def TOcheck(self):
+		if self.skipflag == False:
+			APnums = []
+			APmin = self.AP_max
+			APnums.append( self.level.mymap[self.mapx][self.mapy-1].AP_cost + self.APcost["U"] )
+			APnums.append( self.level.mymap[self.mapx][self.mapy+1].AP_cost + self.APcost["D"] )
+			APnums.append( self.level.mymap[self.mapx-1][self.mapy].AP_cost + self.APcost["L"] )
+			APnums.append( self.level.mymap[self.mapx+1][self.mapy].AP_cost + self.APcost["R"] )
+			APnums.append( self.level.mymap[self.mapx-1][self.mapy-1].AP_cost + self.APcost["UL"] )
+			APnums.append( self.level.mymap[self.mapx+1][self.mapy-1].AP_cost + self.APcost["UR"] )
+			APnums.append( self.level.mymap[self.mapx-1][self.mapy+1].AP_cost + self.APcost["LL"] )
+			APnums.append( self.level.mymap[self.mapx+1][self.mapy+1].AP_cost + self.APcost["LR"] )
+			if self.inventory['axe'] > 0:
+				APnums.append(  self.APcost["Chop"] )
+			if self.inventory['wood'] > 0:
+				APnums.append(  self.APcost["Plant"] )
+			for pos in APnums:
+				if pos < APmin:
+					APmin = pos
+			if self.AP_c <= APmin:
+				self.level.Turn_Over = 1
+				
+	def mountainview(self, aug= 0):
+		if self.myloc.flavor == "Mountain" or self.myloc.flavor == "Extinct Volcano" or self.myloc.flavor == "Active Volcano":
+			self.visibility = 3 + aug
+		elif self.myloc.flavor == "Hills":
+			self.visibility = 2 + aug
+		else:
+			self.visibility = 1 + aug
 
 	def set_Image(self, name):
 		xind = 7
