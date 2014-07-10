@@ -22,8 +22,6 @@ class Mob(pygame.sprite.Sprite):
 		
 		
 		#type
-		#self.flavor = "Static"
-		#self.flavor_saver = ["Static", "Lemming", "Wanderer", "Charger"]
 		self.ATflag = 0#All-Terrain flag
 		self.species = "Hobnail"
 		self.taxonomy = ["Hobnail", "Bear"]
@@ -34,6 +32,12 @@ class Mob(pygame.sprite.Sprite):
 		self.mapy = 0 
 		self.scrnx = 0
 		self.scrny = 0
+		#reference of old location data
+		
+		self.pxs = self.scrnx
+		self.pys = self.scrny
+		self.pmx = self.mapx
+		self.pmy = self.mapy
 		
 		#status
 		self.Turn_Over = False
@@ -44,6 +48,9 @@ class Mob(pygame.sprite.Sprite):
 		self.trycount = 0
 		self.trythresh = 20
 		self.visibility = 1
+		self.inventory = {'axe':0,'wood':0}
+		
+		self.skipflag = False
 		
 		#fighting
 		self.HP_max = 5
@@ -51,6 +58,8 @@ class Mob(pygame.sprite.Sprite):
 		self.ATT = 2
 		self.DEF = 1
 		self.DMG = 0
+		self.HYD_max = 10
+		self.HYD_c = 10
 		
 	def sees_player(self):
 		if abs(self.mapx-self.level.player1.mapx) <= self.visibility and abs(self.mapy-self.level.player1.mapy) <= self.visibility:
@@ -63,7 +72,15 @@ class Mob(pygame.sprite.Sprite):
 		#Hobnail
 		if kind == 0:
 			self.ATflag = 0
-			
+			self.AP_max = 5
+			self.AP_c = 5
+			self.HP_max = 5
+			self.HP_c = 5
+			self.ATT = 2
+			self.DEF = 1
+			self.DMG = 0
+			self.HYD_max = 10
+			self.HYD_c = 10
 		#Bear
 		if kind == 1:
 			self.ATflag = 0
@@ -73,6 +90,8 @@ class Mob(pygame.sprite.Sprite):
 			self.HP_c = 8
 			self.AP_max = 4
 			self.AP_c = 4
+			self.HYD_max = 10
+			self.HYD_c = 10
 		
 		self.set_Image("Species")	
 		
@@ -117,12 +136,25 @@ class Mob(pygame.sprite.Sprite):
 	def spawn(self,x,y):
 		self.mapx = x
 		self.mapy = y
+		self.myloc = self.level.mymap[self.mapx][self.mapy]
 		
 
 	def position(self,x,y):
 		self.scrnx = x
 		self.scrny = y
 		self.rect = pygame.rect.Rect((self.scrnx*self.level.tilex, self.scrny*self.level.tiley), self.image.get_size())
+		self.prevrect = self.rect.copy()
+		
+	def mountainview(self, aug= 0):
+		if self.myloc.flavor == "Mountain" or self.myloc.flavor == "Extinct Volcano" or self.myloc.flavor == "Active Volcano":
+			self.visibility = 3 + aug
+		elif self.myloc.flavor == "Hills":
+			self.visibility = 2 + aug
+		else:
+			self.visibility = 1 + aug
+
+	def itemcheck(self):
+		pass
 
 	def spacecheck(self):
 		for space in pygame.sprite.spritecollide(self, self.level.space, False):
@@ -147,15 +179,57 @@ class Mob(pygame.sprite.Sprite):
 				return False
 		return True
 		
-	def command(self, cmd):
-		self.spacecheck()
-		#reference of old location data
-		prevrect = self.rect.copy()
-		pxs = self.scrnx
-		pys = self.scrny
-		pmx = self.mapx
-		pmy = self.mapy
+	def TOcheck(self):
+		if self.skipflag == False:
+			APnums = []
+			APmin = self.AP_max
+			APnums.append( self.level.mymap[self.mapx][self.mapy-1].AP_cost + self.APcost["U"] )
+			APnums.append( self.level.mymap[self.mapx][self.mapy+1].AP_cost + self.APcost["D"] )
+			APnums.append( self.level.mymap[self.mapx-1][self.mapy].AP_cost + self.APcost["L"] )
+			APnums.append( self.level.mymap[self.mapx+1][self.mapy].AP_cost + self.APcost["R"] )
+			APnums.append( self.level.mymap[self.mapx-1][self.mapy-1].AP_cost + self.APcost["UL"] )
+			APnums.append( self.level.mymap[self.mapx+1][self.mapy-1].AP_cost + self.APcost["UR"] )
+			APnums.append( self.level.mymap[self.mapx-1][self.mapy+1].AP_cost + self.APcost["LL"] )
+			APnums.append( self.level.mymap[self.mapx+1][self.mapy+1].AP_cost + self.APcost["LR"] )
+			if self.inventory['axe'] > 0:
+				APnums.append(  self.APcost["Chop"] )
+			if self.inventory['wood'] > 0:
+				APnums.append(  self.APcost["Plant"] )
+			for pos in APnums:
+				if pos < APmin:
+					APmin = pos
+			if self.AP_c <= APmin:
+				self.level.Turn_Over = 1
+	
+	def hydrate(self):
+		for land in pygame.sprite.spritecollide(self, self.level.terrain, False):
+			if land.flavor == "Scrub":
+				self.HYD_c -= 1
+			elif land.flavor == "Dunes":
+				self.HYD_c -= 2
+			elif land.flavor == "Water":
+				self.HYD_c = self.HYD_max
+			elif land.flavor == "Oasis":
+				self.HYD_c += 10
+		if self.HYD_c <= 0:
+			self.HP_c -= 1
+			if self.HP_c <= 0:
+				self.alive = False
+				self.kill()
+		if self.HYD_c > self.HYD_max:
+			self.HYD_c = self.HYD_max
 		
+	def command(self, cmd):
+		#self.spacecheck()
+		#reference of old location data
+		self.prevrect = self.rect.copy()
+		self.pxs = self.scrnx
+		self.pys = self.scrny
+		self.pmx = self.mapx
+		self.pmy = self.mapy
+		self.skipflag = False
+		
+		#Move Up
 		if cmd == "U":
 			target = self.level.mymap[self.mapx][self.mapy-1]
 			if target in self.unpassable:
@@ -163,6 +237,10 @@ class Mob(pygame.sprite.Sprite):
 			else:
 				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("U")
+				else:
+					self.skipflag = True
+		
+		#Move Down			
 		if cmd == "D":
 			target = self.level.mymap[self.mapx][self.mapy+1]
 			if target in self.unpassable:
@@ -170,6 +248,10 @@ class Mob(pygame.sprite.Sprite):
 			else:
 				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("D")
+				else:
+					self.skipflag = True
+					
+		#Move Left
 		if cmd == "L":
 			target = self.level.mymap[self.mapx-1][self.mapy]
 			if target in self.unpassable:
@@ -177,6 +259,10 @@ class Mob(pygame.sprite.Sprite):
 			else:
 				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("L")
+				else:
+					self.skipflag = True
+					
+		#Move Right
 		if cmd == "R":
 			target = self.level.mymap[self.mapx+1][self.mapy]
 			if target in self.unpassable:
@@ -184,6 +270,10 @@ class Mob(pygame.sprite.Sprite):
 			else:
 				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("R")
+				else:
+					self.skipflag = True
+					
+		#Move up and left
 		if cmd == "UL":
 			target = self.level.mymap[self.mapx-1][self.mapy-1]
 			if target in self.unpassable:
@@ -191,6 +281,10 @@ class Mob(pygame.sprite.Sprite):
 			else:
 				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("UL")
+				else:
+					self.skipflag = True
+					
+		#Move up and Right
 		if cmd == "UR":
 			target = self.level.mymap[self.mapx+1][self.mapy-1]
 			if target in self.unpassable:
@@ -198,6 +292,10 @@ class Mob(pygame.sprite.Sprite):
 			else:
 				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("UR")
+				else:
+					self.skipflag = True
+					
+		#Move down and left
 		if cmd == "LL":
 			target = self.level.mymap[self.mapx-1][self.mapy+1]
 			if target in self.unpassable:
@@ -205,6 +303,10 @@ class Mob(pygame.sprite.Sprite):
 			else:
 				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("LL")
+				else:
+					self.skipflag = True
+					
+		#Move down and right
 		if cmd == "LR":
 			target = self.level.mymap[self.mapx+1][self.mapy+1]
 			if target in self.unpassable:
@@ -212,17 +314,55 @@ class Mob(pygame.sprite.Sprite):
 			else:
 				if self.reckonAP(self.APcost[cmd]+target.AP_cost):
 					self.move("LR")
+				else:
+					self.skipflag = False
+					
+		#Chop Trees	
+		if cmd == "Chop":
+			choppable = { "Dense Woods":4, "Medium Woods":3, "Light Woods": 2, "Grass and Trees":1 }
+			if self.inventory['axe'] > 0:
+				if self.level.mymap[self.mapx][self.mapy].flavor in choppable:
+					if self.reckonAP(self.APcost[cmd]):
+						self.inventory['wood'] += self.level.mymap[self.mapx][self.mapy].wood_level
+						self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
+						self.level.mymap[self.mapx][self.mapy].reset()
+					else:
+						self.skipflag = True
+			
+		#Plant Trees
+		if cmd == "Plant":
+			if self.level.mymap[self.mapx][self.mapy].flavor == "Grassland":
+				if self.inventory['wood'] > 0:
+					if self.reckonAP(self.APcost[cmd]):
+						self.level.mymap[self.mapx][self.mapy].set_type(2)
+						self.inventory['wood'] -= 1
+						self.level.mymap[self.mapx][self.mapy].reset()
+					else:
+						self.skipflag = True
+				
+		#Do Nothing			
+		if cmd == "":
+			pass
 			
 		self.spacecheck()
 		if self.mobcheck() == False:
-			self.rect = prevrect
-			self.scrnx = pxs
-			self.scrny = pys
-			self.mapx = pmx
-			self.mapy = pmy	
-									
-		if self.AP_c <= 0:
-			self.Turn_Over = True
+			self.rect = self.prevrect
+			self.scrnx = self.pxs
+			self.scrny = self.pys
+			self.mapx = self.pmx
+			self.mapy = self.pmy	
+		
+		self.myloc = self.level.mymap[self.mapx][self.mapy]	
+		
+		if self.skipflag == False:
+			self.mountainview()	
+			self.spacecheck()
+			self.itemcheck()
+			self.hydrate()
+			self.TOcheck()
+								
+		#if self.AP_c <= 0:
+		#	self.Turn_Over = True
 			
 				
 	def move(self, vec):
@@ -313,16 +453,22 @@ class Brain(object):
 		self.fnum = 0
 		#states
 		self.state = "Static"
-		#preferred direction for Lemming
+		self.turncount = 0
+		#preferred direction
 		self.perferred_d = "L"
+		self.goax = 0
+		self.goaly = 0
 		#count attempted, unsuccessful actions
 		self.trycount = 0
+		
 		
 	def set_personality(self, persona):
 		self.flavor = self.ptypes[persona]
 		self.fnum = persona
 		if persona < 4:
 			self.state = self.flavor
+			if persona == 3:
+				self.body.set_Image("Angry")
 		if persona == 4:
 			if self.body.sees_player():
 				self.state = "Charger"
