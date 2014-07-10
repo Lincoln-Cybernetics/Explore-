@@ -7,105 +7,108 @@ import item
 import mob
 
 class Game(object):
-	def main (self, screen):
+    def main (self, screen):
 		
-		#general signals
-		self.Game_Over = 0
-		self.Turn_Over = 0
-		self.winx = mainx
-		self.winy = mainy
-		self.counter = 0
-		self.xmax = 30
-		self.ymax = 30
-		self.mapology = 'Proced1'
-		self.screen = screen
+        #general signals
+        self.Game_Over = 0
+        self.Turn_Over = 0
+        self.winx = mainx
+        self.winy = mainy
+        self.counter = 0
+        self.screen = screen
 		
-		#spritesheet dis-aggregators
-		self.tilex = 100
-		self.tiley = 100
-		self.sheet = pygame.image.load('exp100.png').convert()
-		self.animator = ss.Cutout(self.sheet, self.tilex, self.tiley)
-		self.sheet = pygame.image.load('Explm.png').convert()
-		self.landgrabber = ss.Cutout(self.sheet,200,200)
-		
-		#sprite groups
-		self.players = pygame.sprite.Group()
-		self.mobs = pygame.sprite.Group()
-		
-		self.terrain = pygame.sprite.Group()
-		self.landmarks = pygame.sprite.Group()
-		self.mymap = []
-		self.space = pygame.sprite.Group()
-		self.items = pygame.sprite.Group()
-		self.background = pygame.sprite.Group()
-		self.fightable = pygame.sprite.Group()
-		self.revealed = pygame.sprite.Group()
-		self.fogged = pygame.sprite.Group()
-		self.visible = pygame.sprite.Group()
-		
-		#player
-		self.player1 = player.Player(self, self.players)
-		self.player1.add(self.fightable)
+        #World
+        self.xmax = 20
+        self.ymax = 20
+        self.mapology = 'Random'
+        self.season = 0
+        self.daycount = 0
+        self.daymax = 10
 		
 		
+        #spritesheet dis-aggregators
+        self.tilex = 100
+        self.tiley = 100
+        self.sheet = pygame.image.load('Spring.png').convert()
+        self.animator = ss.Cutout(self.sheet, self.tilex, self.tiley)
+        self.sheet = pygame.image.load('Explm.png').convert()
+        self.landgrabber = ss.Cutout(self.sheet,200,200)
+		
+        #sprite groups
+        self.players = pygame.sprite.Group()
+        self.mobs = pygame.sprite.Group()
+		
+        self.terrain = pygame.sprite.Group()
+        self.landmarks = pygame.sprite.Group()
+        self.mymap = []
+        self.space = pygame.sprite.Group()
+        self.items = pygame.sprite.Group()
+        self.background = pygame.sprite.Group()
+        self.fightable = pygame.sprite.Group()
+        self.revealed = pygame.sprite.Group()
+        self.fogged = pygame.sprite.Group()
+        self.visible = pygame.sprite.Group()
+		
+        #player
+        self.player1 = player.Player(self, self.players)
+        self.player1.add(self.fightable)
 		
 		
-		
-		
-		self.mapgen(self.xmax,self.ymax,self.mapology)
-		self.iterate_Game()
+        self.mapgen(self.xmax,self.ymax,self.mapology)
+        self.iterate_Game()
 	
-	def spawnmob(self):
-		dude = mob.Mob(self, self.mobs, self.background, self.fightable)
-		dude.set_type(random.randrange(5))
-		dude.set_species(random.randrange(2))
-		dude.spawn(random.randrange((self.xmax)-2)+1, random.randrange((self.ymax)-2)+1)
+    def spawnmob(self):
+        dude = mob.Mob(self, self.mobs, self.background, self.fightable)
+        dude.set_type(random.randrange(5))
+        dude.set_species(random.randrange(2))
+        dude.spawn(random.randrange((self.xmax)-2)+1, random.randrange((self.ymax)-2)+1)
 		
 		
-	def mapgen(self, x,y, maptype):
-		sizefactor = (x/10) + (y/10)
+    def mapgen(self, x,y, maptype):
+        sizefactor = (x/10) + (y/10)
 		
-		mygem = item.Item(self, self.items)
-		mygem.set_type(0)
+        mygem = item.Item(self, self.items)
+        mygem.set_type(0)
 		
-		mymark = tile.Landmark(self, self.landmarks)
-		mymark.set_type(1)
-		mymid = tile.Landmark(self, self.landmarks)
-		mymid.set_type(0)
+        mymark = tile.Landmark(self, self.landmarks)
+        mymark.set_type(1)
+        mymid = tile.Landmark(self, self.landmarks)
+        mymid.set_type(0)
 		
-		if maptype == 'Basic':
-			myaxe = item.Item(self, self.items)
-			myaxe.set_type(1)
-			mysamm = item.Item(self, self.items)
-			mysamm.set_type(2)
-			mydude = mob.Mob(self, self.mobs)
-			mydude.set_type(0)
-			myscope = item.Item(self, self.items)
-			myscope.set_type(3)
-			mycant = item.Item(self, self.items)
-			mycant.set_type(4)
+        if maptype == 'Basic':
+            myaxe = item.Item(self, self.items)
+            myaxe.set_type(1)
+            mysamm = item.Item(self, self.items)
+            mysamm.set_type(2)
+            mydude = mob.Mob(self, self.mobs)
+            mydude.set_type(4)
+            mydude.set_species(1)
+            myscope = item.Item(self, self.items)
+            myscope.set_type(3)
+            mycant = item.Item(self, self.items)
+            mycant.set_type(4)
 			
-		if maptype == 'Random' or 'Proced1':
-			for num in range(sizefactor*3):
-				itemo = item.Item(self, self.items)
-				itemo.set_type(random.randrange(4)+1)
-			for umb in range(sizefactor):
+        elif maptype == 'Random' or 'Proced1':
+            for num in range(sizefactor*3):
+                itemo = item.Item(self, self.items)
+                itemo.set_type(random.randrange(4)+1)
+            for umb in range(sizefactor):
 				mobbo = mob.Mob(self, self.mobs)
 				mobbo.set_type(random.randrange(5))
 				mobbo.set_species(random.randrange(2))
 		
 		
-		for a in range(x):
+        for a in range(x):
 			mapcol = []
 			for b in range(y):
 				
 				if maptype == 'Basic':
 					landtype = 1
 					
-				if maptype == 'Random':
+				elif maptype == 'Random':
 					landtype = random.randrange(16)+1
 					
-				if maptype == 'Proced1':
+				elif maptype == 'Proced1':
 					#grassland/trees
 					common = [1,2,3,13]
 					uncommon = [4,5,6,7]
@@ -153,7 +156,7 @@ class Game(object):
 				
 			self.mymap.append( mapcol )
 		
-		if maptype == 'Basic':
+        if maptype == 'Basic':
 			mygem.spawn(5,5)
 			myaxe.spawn(8,4)
 			mysamm.spawn(1,6)
@@ -167,7 +170,7 @@ class Game(object):
 			self.player1.position_scrn(6,3)
 			self.normalize(3,3)
 			
-		if maptype == 'Random' or maptype == 'Proced1':
+        elif maptype == 'Random' or maptype == 'Proced1':
 			mygem.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
 			mymark.spawn(random.randrange(x-3)+1, random.randrange(y-3)+1)
 			mymid.spawn(random.randrange(x-3)+1, random.randrange(y-3)+1)
@@ -182,12 +185,12 @@ class Game(object):
 			self.player1.position_scrn(6,3)
 			self.normalize(rnumx,rnumy)	
 		
-		self.background.add(self.landmarks)	
-		self.background.add(self.items)
-		self.background.add(self.mobs)
-		self.fightable.add(self.mobs)
+        self.background.add(self.landmarks)	
+        self.background.add(self.items)
+        self.background.add(self.mobs)
+        self.fightable.add(self.mobs)
 		
-		for wid in range(x):
+        for wid in range(x):
 			for hei in range(y):
 				biome = self.mymap[wid][hei]
 				if biome in self.space:
@@ -198,21 +201,36 @@ class Game(object):
 							biome.neighbors.add(self.mymap[wid+wa-1][hei+ha-1])
 			
 		
+    def advance_season(self):
+		if self.season == 0:
+			self.season = 1
+			self.sheet = pygame.image.load('Summer.png').convert()
+		elif self.season == 1:
+			self.season = 2
+			self.sheet = pygame.image.load('Fall.png').convert()
+		elif self.season == 2:
+			self.season = 3
+			self.sheet = pygame.image.load('Winter.png').convert()
+		elif self.season == 3:
+			self.season = 0
+			self.sheet = pygame.image.load('Spring.png').convert()	
+		self.animator.set_Sheet(self.sheet,100,100)
+		#for land in self.terrain:
+		#	land.get_image()					
 						
-						
-	def desertify(self):	
+    def desertify(self):	
 		for place in self.terrain:
 			place.desert_check()
 			
-	def grow_forest(self):
+    def grow_forest(self):
 		for place in self.terrain:
 			place.forest_check()
 			
-	def advance_lands(self):
+    def advance_lands(self):
 		for place in self.terrain:
 			place.advance()
 		
-	def iterate_Game(self):
+    def iterate_Game(self):
 		while self.Game_Over == 0:
 			
 			self.Turn_Over = 0
@@ -222,7 +240,7 @@ class Game(object):
 				dude.AP_c = dude.AP_max
 			
 			while self.Turn_Over == 0:
-				self.player1.visibility = 1
+				#self.player1.visibility = 1
 				if self.Game_Over != 0:
 							break
 								
@@ -257,7 +275,9 @@ class Game(object):
 						if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
 							self.player1.command("Plant")
 						if event.type == pygame.KEYDOWN and event.key == pygame.K_t:
-							self.player1.visibility = self.player1.televis
+							self.player1.mountainview(self.player1.televis)
+						if pygame.key.get_pressed()[pygame.K_t] == False:
+							self.player1.mountainview()
 						
 						self.display()	
 						
@@ -281,8 +301,14 @@ class Game(object):
 						self.Turn_Over = 0
 						break
 			
-			self.desertify()
-			self.grow_forest()
+			self.daycount += 1
+			if self.daycount >= self.daymax:
+				self.daycount = 0
+				self.advance_season()
+			if self.season == 1 or self.season == 2:
+				self.desertify()
+			if self.season == 0 or self.season == 1:
+				self.grow_forest()
 			self.advance_lands()
 			self.display()
 				
@@ -313,7 +339,7 @@ class Game(object):
 			print "R.I.P., Ranger Dan."
 		
 		
-	def display(self):
+    def display(self):
 		screen.fill((0,0,0))
 		
 		#player stats
@@ -370,7 +396,7 @@ class Game(object):
 		
 		pygame.display.flip()
 		
-	def move_BG(self, d):
+    def move_BG(self, d):
 		for tile in self.background:
 			
 			if d == 'U':
@@ -391,7 +417,7 @@ class Game(object):
 				tile.set_Index(tile.get_Index('X')+1, tile.get_Index('Y')+1)
 		self.players.draw(screen)
 
-	def showBG(self):
+    def showBG(self):
 		for tile in self.terrain:
 			if tile in self.revealed:
 				self.visible.remove(tile)
@@ -426,7 +452,7 @@ class Game(object):
 				self.revealed.add(thing)
 				self.visible.add(lndmrk)
 	
-	def normalize(self,x,y):
+    def normalize(self,x,y):
 		#normalize x
 		norx = 6- x
 		if norx > 0:
