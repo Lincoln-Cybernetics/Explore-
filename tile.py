@@ -1,4 +1,5 @@
 import pygame
+import random
 
 
 class Land(pygame.sprite.Sprite):
@@ -26,14 +27,14 @@ class Land(pygame.sprite.Sprite):
 		
 		#forests
 		self.wood_level = 0
-		self.wp = 0
+		self.wp = random.randrange(300)#random progress toward state change
 		self.forest_prone = False
 		self.forest_thresh = {"Grassland" : 400, "Grass and Trees" :200, "Scrub": 800, "Light Woods": 400, "Medium Woods": 400}
 		self.forest_conv = {"Grassland" : 2, "Grass and Trees" : 3, "Scrub": 1, "Light Woods": 4, "Medium Woods": 5}
 		
 		#deserts
 		self.desert_level = 0
-		self.dp = 0
+		self.dp = random.randrange(300)#random progress toward state change
 		self.desert_prone = False
 		self.desert_thresh = { "Grassland" : 400, "Grass and Trees" : 600, "Scrub": 200, "Water": 800, "Oasis": 600}
 		self.desert_conv = { "Grassland" : 7, "Grass and Trees" : 1, "Scrub": 8, "Water": 16, "Oasis": 8}
@@ -233,6 +234,7 @@ class Land(pygame.sprite.Sprite):
 		return -1
 
 	def draw(self):
+		self.get_image()
 		self.level.screen.blit(self.image, (self.rect.x,self.rect.y))
 
 class Landmark(pygame.sprite.Sprite):
