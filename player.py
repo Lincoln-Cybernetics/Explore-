@@ -29,11 +29,13 @@ class Player(pygame.sprite.Sprite):
 		
 		#player stats
 		self.visibility = 1
+		self.vision = 1
 		self.televis = 0
 		self.screen_border = 1
 		self.AP_max = 10
 		self.AP_c = 10
 		self.APcost = {"U": 1, "D": 1, "L": 1, "R": 1, "UL":2, "UR": 2, "LL": 2, "LR":2, "Chop":3, "Plant": 3}
+		self.perks = []
 		
 		#fighting
 		self.HP_max = 10
@@ -60,7 +62,37 @@ class Player(pygame.sprite.Sprite):
 		self.rect = pygame.rect.Rect((x * self.level.tilex, y * self.level.tiley), self.image.get_size())
 		self.prevrect = self.rect.copy()
 		
+	def add_Perk(self,perk):
+		self.perks.append(perk)
+		if perk == "Early Bird":
+			self.AP_max += 4
+		if perk == "Eagle Eye":
+			self.vision += 1	
+		if perk == "Hearty":
+			self.HP_max += 5
+			self.HP_c += 5
+		if perk == "Strong":
+			self.DMG += 2
+			self.APcost["Chop"] -= 1
+		if perk == "Fighter":
+			self.ATT += 2
+			self.DEF += 2
+		if perk == "Swimmer":
+			for land in self.unpassable:
+				if land.flavor == "Ocean" or land.flavor == "Whirlpool":
+					self.unpassable.remove(land)
 		
+	def AP_check(self, biome, com):
+		tot = 0
+		tot += self.APcost[com]
+		tot += biome.AP_cost
+		if "Swimmer" in self.perks:
+			if biome.flavor == "Water" or biome.flavor == "Ocean" or biome.flavor == "Whirlpool":
+				if biome in self.unpassable:
+					self.unpassable.remove(biome)
+				tot -= 1
+		
+		return tot		
 
 	def command(self, cmd):
 			#print cmd
@@ -77,11 +109,11 @@ class Player(pygame.sprite.Sprite):
 			#Move Up
 			if cmd == "U":
 				target = self.level.mymap[self.mapx][self.mapy-1]
-				#print target.AP_cost, target.flavor
+				APnum = self.AP_check(target, cmd)
 				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+					if self.reckonAP(APnum):
 						self.mapy -= 1
 						if self.scrny*self.level.tiley <= self.level.tiley*self.screen_border:
 							self.bgsig = "D"
@@ -94,11 +126,11 @@ class Player(pygame.sprite.Sprite):
 			#Move Down	
 			if cmd == "D":
 				target = self.level.mymap[self.mapx][self.mapy+1]
-				#print target.AP_cost, target.flavor
+				APnum = self.AP_check(target, cmd)
 				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+					if self.reckonAP(APnum):
 						self.mapy += 1
 						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.screen_border+1))):
 							self.bgsig = "U"
@@ -111,11 +143,11 @@ class Player(pygame.sprite.Sprite):
 			#Move Left
 			if cmd == "L":
 				target = self.level.mymap[self.mapx-1][self.mapy]
-				#print target.AP_cost, target.flavor
+				APnum = self.AP_check(target, cmd)
 				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+					if self.reckonAP(APnum):
 						self.mapx -= 1
 						if self.scrnx*self.level.tilex <= self.level.tilex*self.screen_border:
 							self.bgsig = "R"
@@ -128,11 +160,11 @@ class Player(pygame.sprite.Sprite):
 			#Move Right
 			if cmd == "R":
 				target = self.level.mymap[self.mapx+1][self.mapy]
-				#print target.AP_cost, target.flavor
+				APnum = self.AP_check(target, cmd)
 				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+					if self.reckonAP(APnum):
 						self.mapx += 1
 						if self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.screen_border+1))):
 							self.bgsig = "L"
@@ -145,11 +177,11 @@ class Player(pygame.sprite.Sprite):
 			#Move Up and Left
 			if cmd == "UL":
 				target = self.level.mymap[self.mapx-1][self.mapy-1]
-				#print target.AP_cost, target.flavor
+				APnum = self.AP_check(target, cmd)
 				if  target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+					if self.reckonAP(APnum):
 						self.mapx -= 1
 						self.mapy -= 1
 						if self.scrny*self.level.tiley <= self.level.tiley*self.screen_border or self.scrnx*self.level.tilex <= self.level.tilex*self.screen_border:
@@ -163,11 +195,11 @@ class Player(pygame.sprite.Sprite):
 			#Move Up and Right
 			if cmd == "UR":
 				target = self.level.mymap[self.mapx+1][self.mapy-1]
-				#print target.AP_cost, target.flavor
+				APnum = self.AP_check(target, cmd)
 				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+					if self.reckonAP(APnum):
 						self.mapx += 1
 						self.mapy -= 1
 						if self.scrny*self.level.tiley <= self.level.tiley*self.screen_border or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.screen_border+1))):
@@ -181,11 +213,11 @@ class Player(pygame.sprite.Sprite):
 			#Move Down and Left
 			if cmd == "LL":
 				target = self.level.mymap[self.mapx-1][self.mapy+1]
-				#print target.AP_cost, target.flavor
+				APnum = self.AP_check(target, cmd)
 				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+					if self.reckonAP(APnum):
 						self.mapx -= 1
 						self.mapy += 1
 						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.screen_border+1))) or self.scrnx*self.level.tilex <= self.level.tilex*self.screen_border:
@@ -199,11 +231,11 @@ class Player(pygame.sprite.Sprite):
 			#Move Down and Right
 			if cmd == "LR":
 				target = self.level.mymap[self.mapx+1][self.mapy+1]
-				#print target.AP_cost, target.flavor
+				APnum = self.AP_check(target, cmd)
 				if target in self.unpassable:
 					pass
 				else:
-					if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+					if self.reckonAP(APnum):
 						self.mapx += 1
 						self.mapy += 1
 						if self.scrny*self.level.tiley >= self.level.winy-((self.level.tiley*(self.screen_border+1))) or self.scrnx*self.level.tilex >= self.level.winx-((self.level.tilex*(self.screen_border+1))):
@@ -364,11 +396,11 @@ class Player(pygame.sprite.Sprite):
 				
 	def mountainview(self, aug= 0):
 		if self.myloc.flavor == "Mountain" or self.myloc.flavor == "Extinct Volcano" or self.myloc.flavor == "Active Volcano":
-			self.visibility = 3 + aug
+			self.visibility = self.vision + 2 + aug
 		elif self.myloc.flavor == "Hills":
-			self.visibility = 2 + aug
+			self.visibility = self.vision + 1 + aug
 		else:
-			self.visibility = 1 + aug
+			self.visibility = self.vision + aug
 
 	def set_Image(self, name):
 		xind = 7
