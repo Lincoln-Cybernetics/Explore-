@@ -24,6 +24,7 @@ class Item(pygame.sprite.Sprite):
 	def spawn(self,x,y):
 		self.mapx = x
 		self.mapy = y
+		self.level.mymap[self.mapx][self.mapy].set_type(self.level.get_passable())
 		
 	def position(self,x,y):
 		self.scrnx = x
