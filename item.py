@@ -25,6 +25,7 @@ class Item(pygame.sprite.Sprite):
 		self.mapx = x
 		self.mapy = y
 		self.level.mymap[self.mapx][self.mapy].set_type(self.level.get_passable())
+		self.level.player1.unpassable.remove(self.level.mymap[self.mapx][self.mapy])
 		
 	def position(self,x,y):
 		self.scrnx = x
