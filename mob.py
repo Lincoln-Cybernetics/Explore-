@@ -13,9 +13,9 @@ class Mob(pygame.sprite.Sprite):
         self.unpassable = pygame.sprite.Group()
         
         #base image
-        self.level.animator.set_Img(4,5)
-        self.level.animator.set_colorkey(True,(255,0,0))
-        self.image = self.level.animator.get_Img().convert()
+        self.level.mobdraw.set_Img(3,0)
+        self.level.mobdraw.set_colorkey(True,(255,0,0))
+        self.image = self.level.mobdraw.get_Img().convert()
         
         
         
@@ -24,7 +24,7 @@ class Mob(pygame.sprite.Sprite):
         #type
         self.ATflag = 0#All-Terrain flag
         self.species = "Hobnail"
-        self.taxonomy = ["Hobnail", "Bear"]
+        self.taxonomy = ["Hobnail", "Bear", "Yeti", "Sasquatch"]
         
         #location
         self.firstflag = True
@@ -62,6 +62,7 @@ class Mob(pygame.sprite.Sprite):
         self.DMG = 0
         self.HYD_max = 10
         self.HYD_c = 10
+        self.enemy = 0
         
     def sees_player(self):
         if abs(self.mapx-self.level.player1.mapx) <= self.visibility and abs(self.mapy-self.level.player1.mapy) <= self.visibility:
@@ -94,6 +95,30 @@ class Mob(pygame.sprite.Sprite):
             self.AP_c = 4
             self.HYD_max = 10
             self.HYD_c = 10
+            
+        #Yeti
+        if kind == 2:
+            self.ATflag = 0
+            self.ATT = 4
+            self.DMG = 1
+            self.HP_max = 8
+            self.HP_c = 8
+            self.AP_max = 4
+            self.AP_c = 4
+            self.HYD_max = 10
+            self.HYD_c = 10
+            
+        #Sasquatch
+        if kind == 3:
+            self.ATflag = 0
+            self.ATT = 4
+            self.DMG = 1
+            self.HP_max = 8
+            self.HP_c = 8
+            self.AP_max = 4
+            self.AP_c = 4
+            self.HYD_max = 10
+            self.HYD_c = 10
         
         self.set_Image("Species")   
     
@@ -112,29 +137,83 @@ class Mob(pygame.sprite.Sprite):
         if perk == "Fighter":
             self.ATT += 2
             self.DEF += 2
-    
+        if perk == "Swimmer":
+            for land in self.unpassable:
+                if land.flavor == "Ocean" or land.flavor == "Whirlpool":
+                    self.unpassable.remove(land)
+        if perk == "Runner":
+            moves = ["U","D","L","R","UL","UR","LL","LR"]
+            for move in moves:
+                self.APcost[move] -= 1
+                
         
     def set_Image(self, hint):
+        xind = 0
+        yind = 0
         if hint == "Species":
             if self.species == "Hobnail":
-                xind = 4
-                yind = 5
+                xind = 3
+                yind = 0
             if self.species == "Bear":
-                xind = 4
-                yind = 3
+                xind = 7
+                yind = 0
+            if self.species == "Yeti":
+                xind = 3
+                yind = 1
+            if self.species == "Sasquatch":
+                xind = 7
+                yind = 1
                 
         if hint == "Angry":
             if self.species == "Hobnail":
-                xind = 4
-                yind = 5
+                xind = 1
+                yind = 0
             if self.species == "Bear":
-                xind = 3
-                yind = 3
+                xind = 5
+                yind = 0
+            if self.species == "Yeti":
+                xind = 1
+                yind = 1
+            if self.species == "Sasquatch":
+                xind = 5
+                yind = 1
+                
+        if hint == "Scared":
+            if self.species == "Hobnail":
+                xind = 2
+                yind = 0
+            if self.species == "Bear":
+                xind = 6
+                yind = 0
+            if self.species == "Yeti":
+                xind = 2
+                yind = 1
+            if self.species == "Sasquatch":
+                xind = 6
+                yind = 1
+                
+        if hint == "Dead":
+            if self.species == "Hobnail":
+                xind = 0
+                yind = 0
+            if self.species == "Bear":
+                xind = 4
+                yind = 0
+            if self.species == "Yeti":
+                xind = 0
+                yind = 1
+            if self.species == "Sasquatch":
+                xind = 4
+                yind = 1
+                
+        if hint == "Fight":
+            xind = random.randrange(2)
+            yind = 5
                 
         #set the sprite image
-        self.level.animator.set_Img(xind,yind)
-        self.level.animator.set_colorkey(True,(255,0,0))
-        self.image = self.level.animator.get_Img().convert()
+        self.level.mobdraw.set_Img(xind,yind)
+        self.level.mobdraw.set_colorkey(True,(255,0,0))
+        self.image = self.level.mobdraw.get_Img().convert()
         
         
     def set_type(self, personality):
@@ -148,7 +227,8 @@ class Mob(pygame.sprite.Sprite):
         self.HP_c -= dmg
         if self.HP_c <= 0:
             self.Alive = False
-            #self.level.spawnmob()  
+            self.set_Image("Dead")
+            self.brain.set_personality(0)
                                     
         
     def spawn(self,x,y):
@@ -164,12 +244,12 @@ class Mob(pygame.sprite.Sprite):
         self.prevrect = self.rect.copy()
         
     def mountainview(self, aug= 0):
-		if self.myloc.flavor == "Mountain" or self.myloc.flavor == "Extinct Volcano" or self.myloc.flavor == "Active Volcano":
-			self.visibility = self.vision + 2 + aug
-		elif self.myloc.flavor == "Hills":
-			self.visibility = self.vision + 1 + aug
-		else:
-			self.visibility = self.vision + aug
+        if self.myloc.flavor == "Mountain" or self.myloc.flavor == "Extinct Volcano" or self.myloc.flavor == "Active Volcano":
+            self.visibility = self.vision + 2 + aug
+        elif self.myloc.flavor == "Hills":
+            self.visibility = self.vision + 1 + aug
+        else:
+            self.visibility = self.vision + aug
 
     def itemcheck(self):
         pass
@@ -186,10 +266,12 @@ class Mob(pygame.sprite.Sprite):
             self.kill()
             
     def mobcheck(self):
+        self.enemy = 0
         for mob in pygame.sprite.spritecollide(self, self.level.fightable, False):
             if mob == self:
                 pass
             else:
+                self.enemy = mob
                 self.fight(mob)
                 if mob.Alive == False:
                     mob.kill()
@@ -233,7 +315,8 @@ class Mob(pygame.sprite.Sprite):
             self.HP_c -= 1
             if self.HP_c <= 0:
                 self.alive = False
-                self.kill()
+                self.set_Image("Dead")
+                self.brain.set_personality(0)
         if self.HYD_c > self.HYD_max:
             self.HYD_c = self.HYD_max
         
@@ -368,7 +451,12 @@ class Mob(pygame.sprite.Sprite):
             self.scrnx = self.pxs
             self.scrny = self.pys
             self.mapx = self.pmx
-            self.mapy = self.pmy    
+            self.mapy = self.pmy
+            self.enemy.set_Image("Fight")
+            self.level.display()
+            pygame.time.wait(500)
+            self.enemy.remember('img')
+            self.level.display()    
         
         self.myloc = self.level.mymap[self.mapx][self.mapy] 
         
@@ -457,6 +545,20 @@ class Mob(pygame.sprite.Sprite):
         
         return
         
+    def remember(self, param):
+        if param == "img":
+            if self.brain.state == "Charger":
+                self.set_Image("Angry")
+            elif self.brain.state == "Scared":
+                self.set_Image("Scared")
+            elif self.Alive == False:
+                self.set_Image("Dead")
+            else:
+                self.set_Image("Species")
+        else:
+            pass
+            
+        
     def draw(self):
         self.level.screen.blit(self.image, (self.rect.x,self.rect.y))
 ###end of mob class###
@@ -466,7 +568,7 @@ class Brain(object):
         #attach the brain to the body
         self.body = body
         #personality types
-        self.ptypes = ["Static", "Lemming", "Wanderer", "Charger","Hunter"]
+        self.ptypes = ["Static", "Lemming", "Wanderer", "Charger", "Scared", "Hunter"]
         self.flavor = "Static"
         self.fnum = 0
         #states
@@ -483,11 +585,13 @@ class Brain(object):
     def set_personality(self, persona):
         self.flavor = self.ptypes[persona]
         self.fnum = persona
-        if persona < 4:
+        if persona < 5:
             self.state = self.flavor
             if persona == 3:
                 self.body.set_Image("Angry")
-        if persona == 4:
+            if persona == 4:
+                self.body.set_Image("Scared")
+        if persona == 5:
             if self.body.sees_player():
                 self.state = "Charger"
                 self.body.set_Image("Angry")
@@ -530,10 +634,34 @@ class Brain(object):
                 self.body.command("D")
             return
             
-    def think(self):
-        if self.fnum < 4:
+        if self.state == "Scared":
+            if self.body.AP_c >= 2:
+                if self.body.mapx > self.body.level.player1.mapx and self.body.mapy > self.body.level.player1.mapy:
+                    self.body.command("LR")
+                if self.body.mapx < self.body.level.player1.mapx and self.body.mapy > self.body.level.player1.mapy:
+                    self.body.command("LL")
+                if self.body.mapx > self.body.level.player1.mapx and self.body.mapy < self.body.level.player1.mapy:
+                    self.body.command("UR")
+                if self.body.mapx < self.body.level.player1.mapx and self.body.mapy < self.body.level.player1.mapy:
+                    self.body.command("UL")
+            if self.body.mapx > self.body.level.player1.mapx:
+                self.body.command("R")
+            if self.body.mapx < self.body.level.player1.mapx:
+                self.body.command("L")
+            if self.body.mapy > self.body.level.player1.mapy:
+                self.body.command("D")
+            if self.body.mapy < self.body.level.player1.mapy:
+                self.body.command("U")
             return
-        if self.fnum == 4:
+            
+    def think(self):
+        if self.fnum < 5:
+            if self.fnum == 3:
+                self.body.set_Image("Angry")
+            if self.fnum == 4:
+                self.body.set_Image("Scared")
+            return
+        if self.fnum == 5:
             if self.state == "Charger":
                 self.body.set_Image("Angry")
             else:
