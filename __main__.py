@@ -34,6 +34,8 @@ class Game(object):
         self.animator = ss.Cutout(self.sheet, self.tilex, self.tiley)
         self.sheet = pygame.image.load('Explm.png').convert()
         self.landgrabber = ss.Cutout(self.sheet,200,200)
+        self.sheet = pygame.image.load('mobs.png').convert()
+        self.mobdraw = ss.Cutout(self.sheet, self.tilex, self.tiley)
         
         #sprite groups
         self.players = pygame.sprite.Group()
@@ -53,7 +55,7 @@ class Game(object):
         #player
         self.player1 = player.Player(self, self.players)
         self.player1.add(self.fightable)
-        self.player1.add_Perk("Swimmer")
+        self.player1.add_Perk("Runner")
         
         self.mapgen(self.xmax,self.ymax,self.mapology)
         self.iterate_Game()
@@ -95,8 +97,8 @@ class Game(object):
                 itemo.set_type(random.randrange(4)+1)
             for umb in range(sizefactor):
                 mobbo = mob.Mob(self, self.mobs)
-                mobbo.set_type(random.randrange(5))
-                mobbo.set_species(random.randrange(2))
+                mobbo.set_type(random.randrange(6))
+                mobbo.set_species(random.randrange(3)+1)
         
         
         for a in range(x):
