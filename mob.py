@@ -142,10 +142,10 @@ class Mob(pygame.sprite.Sprite):
                 if land.flavor == "Ocean" or land.flavor == "Whirlpool":
                     self.unpassable.remove(land)
         if perk == "Runner":
-            moves = ["U","D","L","R","UL","UR","LL","LR"]
-            for move in moves:
-                self.APcost[move] -= 1
-                
+            #moves = ["U","D","L","R","UL","UR","LL","LR"]
+            #for move in moves:
+            #    self.APcost[move] -= 1
+            pass
         
     def set_Image(self, hint):
         xind = 0
@@ -207,7 +207,7 @@ class Mob(pygame.sprite.Sprite):
                 yind = 1
                 
         if hint == "Fight":
-            xind = random.randrange(2)
+            xind = random.randrange(4)
             yind = 5
                 
         #set the sprite image
@@ -283,14 +283,14 @@ class Mob(pygame.sprite.Sprite):
         if self.skipflag == False:
             APnums = []
             APmin = self.AP_max
-            APnums.append( self.level.mymap[self.mapx][self.mapy-1].AP_cost + self.APcost["U"] )
-            APnums.append( self.level.mymap[self.mapx][self.mapy+1].AP_cost + self.APcost["D"] )
-            APnums.append( self.level.mymap[self.mapx-1][self.mapy].AP_cost + self.APcost["L"] )
-            APnums.append( self.level.mymap[self.mapx+1][self.mapy].AP_cost + self.APcost["R"] )
-            APnums.append( self.level.mymap[self.mapx-1][self.mapy-1].AP_cost + self.APcost["UL"] )
-            APnums.append( self.level.mymap[self.mapx+1][self.mapy-1].AP_cost + self.APcost["UR"] )
-            APnums.append( self.level.mymap[self.mapx-1][self.mapy+1].AP_cost + self.APcost["LL"] )
-            APnums.append( self.level.mymap[self.mapx+1][self.mapy+1].AP_cost + self.APcost["LR"] )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx][self.mapy-1] , "U") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx][self.mapy+1] , "D") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx-1][self.mapy] , "L") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx+1][self.mapy] , "R") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx-1][self.mapy-1] , "UL") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx+1][self.mapy-1] , "UR") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx-1][self.mapy+1] , "LL") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx+1][self.mapy+1] , "LR") )
             if self.inventory['axe'] > 0:
                 APnums.append(  self.APcost["Chop"] )
             if self.inventory['wood'] > 0:
@@ -300,6 +300,23 @@ class Mob(pygame.sprite.Sprite):
                     APmin = pos
             if self.AP_c <= APmin:
                 self.level.Turn_Over = 1
+    
+    def AP_check(self, biome, com):
+        tot = 0
+        tot += self.APcost[com]
+        tot += biome.AP_cost
+        if "Swimmer" in self.perks:
+            if biome.flavor == "Water" or biome.flavor == "Ocean" or biome.flavor == "Whirlpool":
+                if biome in self.unpassable:
+                    self.unpassable.remove(biome)
+                tot -= 1
+        if "Runner" in self.perks:
+            if biome.flavor != "Water" or biome.flavor != "Ocean" or biome.flavor != "Whirlpool":
+                tot -= 1
+        if tot < 1:
+            tot = 1
+        return tot      
+
     
     def hydrate(self):
         for land in pygame.sprite.spritecollide(self, self.level.terrain, False):
@@ -333,10 +350,11 @@ class Mob(pygame.sprite.Sprite):
         #Move Up
         if cmd == "U":
             target = self.level.mymap[self.mapx][self.mapy-1]
+            APnum = self.AP_check(target, cmd)
             if target in self.unpassable:
                 pass
             else:
-                if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+                if self.reckonAP(APnum):
                     self.move("U")
                 else:
                     self.skipflag = True
@@ -344,10 +362,11 @@ class Mob(pygame.sprite.Sprite):
         #Move Down          
         if cmd == "D":
             target = self.level.mymap[self.mapx][self.mapy+1]
+            APnum = self.AP_check(target, cmd)
             if target in self.unpassable:
                 pass
             else:
-                if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+                if self.reckonAP(APnum):
                     self.move("D")
                 else:
                     self.skipflag = True
@@ -355,10 +374,11 @@ class Mob(pygame.sprite.Sprite):
         #Move Left
         if cmd == "L":
             target = self.level.mymap[self.mapx-1][self.mapy]
+            APnum = self.AP_check(target, cmd)
             if target in self.unpassable:
                 pass
             else:
-                if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+                if self.reckonAP(APnum):
                     self.move("L")
                 else:
                     self.skipflag = True
@@ -366,10 +386,11 @@ class Mob(pygame.sprite.Sprite):
         #Move Right
         if cmd == "R":
             target = self.level.mymap[self.mapx+1][self.mapy]
+            APnum = self.AP_check(target, cmd)
             if target in self.unpassable:
                 pass
             else:
-                if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+                if self.reckonAP(APnum):
                     self.move("R")
                 else:
                     self.skipflag = True
@@ -377,10 +398,11 @@ class Mob(pygame.sprite.Sprite):
         #Move up and left
         if cmd == "UL":
             target = self.level.mymap[self.mapx-1][self.mapy-1]
+            APnum = self.AP_check(target, cmd)
             if target in self.unpassable:
                 pass
             else:
-                if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+                if self.reckonAP(APnum):
                     self.move("UL")
                 else:
                     self.skipflag = True
@@ -388,10 +410,11 @@ class Mob(pygame.sprite.Sprite):
         #Move up and Right
         if cmd == "UR":
             target = self.level.mymap[self.mapx+1][self.mapy-1]
+            APnum = self.AP_check(target, cmd)
             if target in self.unpassable:
                 pass
             else:
-                if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+                if self.reckonAP(APnum):
                     self.move("UR")
                 else:
                     self.skipflag = True
@@ -399,10 +422,11 @@ class Mob(pygame.sprite.Sprite):
         #Move down and left
         if cmd == "LL":
             target = self.level.mymap[self.mapx-1][self.mapy+1]
+            APnum = self.AP_check(target, cmd)
             if target in self.unpassable:
                 pass
             else:
-                if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+                if self.reckonAP(APnum):
                     self.move("LL")
                 else:
                     self.skipflag = True
@@ -410,10 +434,11 @@ class Mob(pygame.sprite.Sprite):
         #Move down and right
         if cmd == "LR":
             target = self.level.mymap[self.mapx+1][self.mapy+1]
+            APnum = self.AP_check(target, cmd)
             if target in self.unpassable:
                 pass
             else:
-                if self.reckonAP(self.APcost[cmd]+target.AP_cost):
+                if self.reckonAP(APnum):
                     self.move("LR")
                 else:
                     self.skipflag = False
