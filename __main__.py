@@ -95,7 +95,7 @@ class Game(object):
             for num in range(sizefactor*3):
                 itemo = item.Item(self, self.items)
                 itemo.set_type(random.randrange(4)+1)
-            for umb in range(sizefactor):
+            for umb in range(sizefactor*3):
                 mobbo = mob.Mob(self, self.mobs)
                 mobbo.set_type(random.randrange(6))
                 mobbo.set_species(random.randrange(3)+1)
