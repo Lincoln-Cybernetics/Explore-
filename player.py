@@ -85,9 +85,10 @@ class Player(pygame.sprite.Sprite):
                 if land.flavor == "Ocean" or land.flavor == "Whirlpool":
                     self.unpassable.remove(land)
         if perk == "Runner":
-            moves = ["U","D","L","R","UL","UR","LL","LR"]
-            for move in moves:
-                self.APcost[move] -= 1
+            pass
+           # moves = ["U","D","L","R","UL","UR","LL","LR"]
+           # for move in moves:
+           #     self.APcost[move] -= 1
             
             
         
@@ -100,7 +101,11 @@ class Player(pygame.sprite.Sprite):
                 if biome in self.unpassable:
                     self.unpassable.remove(biome)
                 tot -= 1
-        
+        if "Runner" in self.perks:
+            if biome.flavor != "Water" or biome.flavor != "Ocean" or biome.flavor != "Whirlpool":
+                tot -= 1
+        if tot < 1:
+            tot = 1
         return tot      
 
     def command(self, cmd):
@@ -119,6 +124,10 @@ class Player(pygame.sprite.Sprite):
             if cmd == "U":
                 target = self.level.mymap[self.mapx][self.mapy-1]
                 APnum = self.AP_check(target, cmd)
+                if "Runner" in self.perks and target.flavnum != 13 and target.flavnum != 14 and target.flavnum != 15:
+                    APnum -= 1
+                if APnum < 1:
+                    APnum = 1
                 if target in self.unpassable:
                     pass
                 else:
@@ -390,14 +399,14 @@ class Player(pygame.sprite.Sprite):
         if self.skipflag == False:
             APnums = []
             APmin = self.AP_max
-            APnums.append( self.level.mymap[self.mapx][self.mapy-1].AP_cost + self.APcost["U"] )
-            APnums.append( self.level.mymap[self.mapx][self.mapy+1].AP_cost + self.APcost["D"] )
-            APnums.append( self.level.mymap[self.mapx-1][self.mapy].AP_cost + self.APcost["L"] )
-            APnums.append( self.level.mymap[self.mapx+1][self.mapy].AP_cost + self.APcost["R"] )
-            APnums.append( self.level.mymap[self.mapx-1][self.mapy-1].AP_cost + self.APcost["UL"] )
-            APnums.append( self.level.mymap[self.mapx+1][self.mapy-1].AP_cost + self.APcost["UR"] )
-            APnums.append( self.level.mymap[self.mapx-1][self.mapy+1].AP_cost + self.APcost["LL"] )
-            APnums.append( self.level.mymap[self.mapx+1][self.mapy+1].AP_cost + self.APcost["LR"] )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx][self.mapy-1] , "U") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx][self.mapy+1] , "D") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx-1][self.mapy] , "L") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx+1][self.mapy] , "R") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx-1][self.mapy-1] , "UL") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx+1][self.mapy-1] , "UR") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx-1][self.mapy+1] , "LL") )
+            APnums.append(self.AP_check( self.level.mymap[self.mapx+1][self.mapy+1] , "LR") )
             if self.inventory['axe'] > 0:
                 APnums.append(  self.APcost["Chop"] )
             if self.inventory['wood'] > 0:
@@ -433,7 +442,7 @@ class Player(pygame.sprite.Sprite):
         self.image.set_colorkey((255,0,0))
         
         if name == "Fight":
-            xind = random.randrange(2)
+            xind = random.randrange(4)
             yind = 5
             self.level.mobdraw.set_Img(xind,yind)
             self.image = self.level.mobdraw.get_Img().convert()
