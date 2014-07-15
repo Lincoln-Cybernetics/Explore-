@@ -36,6 +36,8 @@ class Game(object):
         self.landgrabber = ss.Cutout(self.sheet,200,200)
         self.sheet = pygame.image.load('mobs.png').convert()
         self.mobdraw = ss.Cutout(self.sheet, self.tilex, self.tiley)
+        self.sheet = pygame.image.load('items.png').convert()
+        self.warehouse = ss.Cutout(self.sheet, self.tilex, self.tiley)
         
         #sprite groups
         self.players = pygame.sprite.Group()
@@ -55,9 +57,10 @@ class Game(object):
         #player
         self.player1 = player.Player(self, self.players)
         self.player1.add(self.fightable)
-        self.player1.add_Perk("Runner")
+        
         
         self.mapgen(self.xmax,self.ymax,self.mapology)
+        self.player1.add_Perk("Mountaineer")
         self.iterate_Game()
     
     def spawnmob(self):
@@ -94,11 +97,11 @@ class Game(object):
         elif maptype == 'Random' or 'Proced1':
             for num in range(sizefactor*3):
                 itemo = item.Item(self, self.items)
-                itemo.set_type(random.randrange(4)+1)
+                itemo.set_type(random.randrange(6)+1)
             for umb in range(sizefactor*3):
                 mobbo = mob.Mob(self, self.mobs)
-                mobbo.set_type(random.randrange(6))
-                mobbo.set_species(random.randrange(3)+1)
+                mobbo.set_type(random.randrange(7))
+                mobbo.set_species(random.randrange(4)+1)
         
         
         for a in range(x):
@@ -113,11 +116,11 @@ class Game(object):
                     
                 elif maptype == 'Proced1':
                     #grassland/trees
-                    common = [1,2,3,13]
-                    uncommon = [4,5,6,7]
-                    rare = [8,9,10]
-                    vrare = [12,15]
-                    self.passable = 1
+                    #common = [1,2,3,13]
+                    #uncommon = [4,5,6,7]
+                    #rare = [8,9,10]
+                    #vrare = [12,15]
+                    #self.passable = 1
                     
                     #desert
                     #common = [8]
@@ -127,11 +130,11 @@ class Game(object):
                     #self.passable = 7
                     
                     #Forest
-                    #common = [3,4,5,9]
-                    #uncommon = [1,2,6]
-                    #rare = [7,13]
-                    #vrare = [10,11,12]
-                    #self.passable = 2
+                    common = [3,4,5,9]
+                    uncommon = [1,2,6]
+                    rare = [7,13]
+                    vrare = [10,11,12]
+                    self.passable = 2
                     
                     landex = random.randrange(256)
                     if landex < 256:
@@ -153,7 +156,9 @@ class Game(object):
                 else:
                     acre.set_type(landtype)
                     acre.get_image()
-                    if landtype == 14 or landtype == 15:
+                    if landtype == 14 or landtype == 15 or landtype == 12:
+                        for mobbo in self.mobs:
+                            mobbo.unpassable.add(acre)
                         self.player1.unpassable.add(acre)
                 acre.spawn(a, b)
                 self.background.add(acre)
