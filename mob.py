@@ -24,7 +24,7 @@ class Mob(pygame.sprite.Sprite):
         #type
         self.ATflag = 0#All-Terrain flag
         self.species = "Hobnail"
-        self.taxonomy = ["Hobnail", "Bear", "Yeti", "Sasquatch"]
+        self.taxonomy = ["Hobnail", "Bear", "Yeti", "Sasquatch", "BlueBird"]
         
         #location
         self.firstflag = True
@@ -49,7 +49,7 @@ class Mob(pygame.sprite.Sprite):
         self.trythresh = 20
         self.visibility = 1
         self.vision = 1
-        self.inventory = {'axe':0,'wood':0}
+        self.inventory = {'axe': 0, 'wood': 0, 'telescope': 0, 'canteen':0, 'bearskin':0, 'squatchhide':0, 'yetiskin':0}
         self.perks = []
         
         self.skipflag = False
@@ -95,6 +95,7 @@ class Mob(pygame.sprite.Sprite):
             self.AP_c = 4
             self.HYD_max = 10
             self.HYD_c = 10
+            self.inventory['bearskin'] = 1
             
         #Yeti
         if kind == 2:
@@ -107,6 +108,7 @@ class Mob(pygame.sprite.Sprite):
             self.AP_c = 4
             self.HYD_max = 10
             self.HYD_c = 10
+            self.inventory['yetiskin'] = 1
             
         #Sasquatch
         if kind == 3:
@@ -119,6 +121,21 @@ class Mob(pygame.sprite.Sprite):
             self.AP_c = 4
             self.HYD_max = 10
             self.HYD_c = 10
+            self.inventory['squatchhide'] = 1
+            
+        #Bluebird
+        if kind == 4:
+            self.ATflag = 0
+            self.ATT = 1
+            self.DMG = 0
+            self.HP_max = 3
+            self.HP_c = 3
+            self.AP_max = 4
+            self.AP_c = 4
+            self.HYD_max = 30
+            self.HYD_c = 30
+            self.DEF = 1
+            
         
         self.set_Image("Species")   
     
@@ -163,6 +180,10 @@ class Mob(pygame.sprite.Sprite):
             if self.species == "Sasquatch":
                 xind = 7
                 yind = 1
+            if self.species == "BlueBird":
+                self.DEF = 1
+                xind = 3
+                yind = 2
                 
         if hint == "Angry":
             if self.species == "Hobnail":
@@ -177,6 +198,10 @@ class Mob(pygame.sprite.Sprite):
             if self.species == "Sasquatch":
                 xind = 5
                 yind = 1
+            if self.species == "BlueBird":
+                self.DEF = 1
+                xind = 1
+                yind = 2
                 
         if hint == "Scared":
             if self.species == "Hobnail":
@@ -191,6 +216,10 @@ class Mob(pygame.sprite.Sprite):
             if self.species == "Sasquatch":
                 xind = 6
                 yind = 1
+            if self.species == "BlueBird":
+                self.DEF = 10
+                xind = 2
+                yind = 2
                 
         if hint == "Dead":
             if self.species == "Hobnail":
@@ -205,6 +234,10 @@ class Mob(pygame.sprite.Sprite):
             if self.species == "Sasquatch":
                 xind = 4
                 yind = 1
+            if self.species == "BlueBird":
+                self.DEF = 1
+                xind = 0
+                yind = 2
                 
         if hint == "Fight":
             xind = random.randrange(4)
@@ -298,7 +331,7 @@ class Mob(pygame.sprite.Sprite):
             for pos in APnums:
                 if pos < APmin:
                     APmin = pos
-            if self.AP_c <= APmin:
+            if self.AP_c < APmin:
                 self.level.Turn_Over = 1
     
     def AP_check(self, biome, com):
@@ -559,6 +592,7 @@ class Mob(pygame.sprite.Sprite):
         return -1
 
     def take_turn(self):
+        self.brain.turncount += 1
         self.trycount = 0
         self.Turn_Over = False
         while self.Turn_Over == False:
@@ -593,7 +627,7 @@ class Brain(object):
         #attach the brain to the body
         self.body = body
         #personality types
-        self.ptypes = ["Static", "Lemming", "Wanderer", "Charger", "Scared", "Hunter"]
+        self.ptypes = ["Static", "Lemming", "Wanderer", "Charger", "Scared", "Hunter", "ScaredyCat"]
         self.flavor = "Static"
         self.fnum = 0
         #states
@@ -605,6 +639,9 @@ class Brain(object):
         self.goaly = 0
         #count attempted, unsuccessful actions
         self.trycount = 0
+        #turn counter
+        self.turncount = 0
+        
         
         
     def set_personality(self, persona):
@@ -623,6 +660,9 @@ class Brain(object):
             else:
                 self.state = "Wanderer"
                 self.set_Image("Species")
+        if persona == 6:
+            self.state = "Static"
+                
         
     def get_Action(self):
         
@@ -680,12 +720,16 @@ class Brain(object):
             return
             
     def think(self):
+        
+        #one-note
         if self.fnum < 5:
             if self.fnum == 3:
                 self.body.set_Image("Angry")
             if self.fnum == 4:
                 self.body.set_Image("Scared")
             return
+            
+        #hunter
         if self.fnum == 5:
             if self.state == "Charger":
                 self.body.set_Image("Angry")
@@ -696,6 +740,22 @@ class Brain(object):
                 else:
                     self.state = "Wanderer"
                     self.body.set_Image("Species")
+          
+        #scaredy cat
+        if self.fnum == 6:
+            if self.body.sees_player():
+                self.state = "Scared"
+                self.body.set_Image("Scared")
+                self.turncount = 0
+            else:
+                if self.turncount > 6:
+                    self.state = "Static"
+                    self.body.set_Image("Species")
+                elif self.turncount > 4:
+                    self.state = "Wanderer"
+                    self.body.set_Image("Species")
+                
+            
             
             
 ###end of Brain class###
