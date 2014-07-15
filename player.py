@@ -27,7 +27,7 @@ class Player(pygame.sprite.Sprite):
         self.bgsig = ""
         
         #item inventory
-        self.inventory = {'axe': 0, 'wood': 0, 'telescope': 0, 'canteen':0}
+        self.inventory = {'axe': 0, 'wood': 0, 'telescope': 0, 'canteen':0, 'bearskin':0, 'squatchhide':0, 'yetiskin':0, 'coin':0, 'binoculars':0}
         
         #player stats
         self.visibility = 1
@@ -66,6 +66,7 @@ class Player(pygame.sprite.Sprite):
         self.prevrect = self.rect.copy()
         
     def add_Perk(self,perk):
+        #must be called AFTER the map is created
         self.perks.append(perk)
         if perk == "Early Bird":
             self.AP_max += 4
@@ -86,9 +87,10 @@ class Player(pygame.sprite.Sprite):
                     self.unpassable.remove(land)
         if perk == "Runner":
             pass
-           # moves = ["U","D","L","R","UL","UR","LL","LR"]
-           # for move in moves:
-           #     self.APcost[move] -= 1
+        if perk == "Mountaineer":
+            for land in self.unpassable:
+                if land.flavor == "Active Volcano":
+                    self.unpassable.remove(land)
             
             
         
@@ -103,6 +105,9 @@ class Player(pygame.sprite.Sprite):
                 tot -= 1
         if "Runner" in self.perks:
             if biome.flavor != "Water" or biome.flavor != "Ocean" or biome.flavor != "Whirlpool":
+                tot -= 1
+        if "Mountaineer" in self.perks:
+            if biome.flavnum == 12 or biome.flavnum == 11 or biome.flavnum == 10:
                 tot -= 1
         if tot < 1:
             tot = 1
@@ -371,11 +376,21 @@ class Player(pygame.sprite.Sprite):
                 self.screen_border = 3
                 self.inventory['telescope'] += 1
                 
+            if item.flavor == 'binoculars':
+                if self.inventory['telescope'] <= 0:
+                    self.televis = 1
+                    self.screen_border = 2
+                self.inventory['binoculars'] += 1
+                
             if item.flavor == 'canteen':
                 self.HYD_max += 10
                 if self.HYD_max > 40:
                     self.HYD_max = 40
                 self.inventory['canteen'] += 1
+                
+            if item.flavor == 'coin':
+                self.inventory['coin'] += 1
+                
                 
     def hydrate(self):
         for land in pygame.sprite.spritecollide(self, self.level.terrain, False):
@@ -414,7 +429,7 @@ class Player(pygame.sprite.Sprite):
             for pos in APnums:
                 if pos < APmin:
                     APmin = pos
-            if self.AP_c <= APmin:
+            if self.AP_c < APmin:
                 self.level.Turn_Over = 1
                 
     def mountainview(self, aug= 0):
@@ -473,6 +488,8 @@ class Player(pygame.sprite.Sprite):
                     self.fight(mob)
                     return False
                 if mob.Alive == False:
+                    for item in mob.inventory.keys():
+                        self.inventory[item] += mob.inventory[item]
                     mob.kill()
                     return True
         return True
