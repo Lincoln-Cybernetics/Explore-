@@ -12,7 +12,7 @@ class Item(pygame.sprite.Sprite):
 		
 		
 		#type
-		self.flavor_saver = ['gem', 'axe', 'sammich', 'telescope', 'canteen']
+		self.flavor_saver = ['gem', 'axe', 'sammich', 'telescope', 'canteen', 'coin', 'binoculars']
 		self.flavor = 'gem'
 		#location
 		self.firstflag = True
@@ -24,8 +24,11 @@ class Item(pygame.sprite.Sprite):
 	def spawn(self,x,y):
 		self.mapx = x
 		self.mapy = y
-		self.level.mymap[self.mapx][self.mapy].set_type(self.level.get_passable())
-		self.level.player1.unpassable.remove(self.level.mymap[self.mapx][self.mapy])
+		if self.flavor == 'coin':
+			pass
+		else:
+			self.level.mymap[self.mapx][self.mapy].set_type(self.level.get_passable())
+			self.level.player1.unpassable.remove(self.level.mymap[self.mapx][self.mapy])
 		
 	def position(self,x,y):
 		self.scrnx = x
@@ -49,10 +52,16 @@ class Item(pygame.sprite.Sprite):
 		if itype == 4:
 			xind = 4
 			yind = 4
+		if itype == 5:
+			xind = 5
+			yind = 0
+		if itype == 6:
+			xind = 5
+			yind = 3
 			
-		self.level.animator.set_Img(xind,yind)
-		self.level.animator.set_colorkey(True,(255,0,0))
-		self.image = self.level.animator.get_Img().convert()
+		self.level.warehouse.set_Img(xind,yind)
+		self.level.warehouse.set_colorkey(True,(255,0,0))
+		self.image = self.level.warehouse.get_Img().convert()
 	
 
 
