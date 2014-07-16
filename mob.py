@@ -4,13 +4,15 @@ import random
 class Mob(pygame.sprite.Sprite):
     def __init__(self, level, *groups):
         super(Mob, self).__init__(*groups)
-        #My BRAIN!
-        self.brain = Brain(self)
         #the game level
         self.level = level
         
+        #My BRAIN!
+        self.brain = Brain(self)
+        
         #sprite groups
         self.unpassable = pygame.sprite.Group()
+        self.seen_mobs = pygame.sprite.Group()
         
         #base image
         self.level.mobdraw.set_Img(3,0)
@@ -64,11 +66,23 @@ class Mob(pygame.sprite.Sprite):
         self.HYD_c = 10
         self.enemy = 0
         
+        
     def sees_player(self):
         if abs(self.mapx-self.level.player1.mapx) <= self.visibility and abs(self.mapy-self.level.player1.mapy) <= self.visibility:
             return True
         else:
             return False
+            
+    def sees_mobs(self):
+        status = False
+        for mob in self.level.mobs:
+            if mob in self.seen_mobs:
+                self.seen_mobs.remove(mob)
+            if abs(self.mapx-mob.mapx) <= self.visibility and abs(self.mapy-mob.mapy) <= self.visibility:
+                self.seen_mobs.add(mob)
+                status = True
+        return status
+        
             
     def set_species(self, kind):
         self.species = self.taxonomy[kind]
@@ -254,14 +268,16 @@ class Mob(pygame.sprite.Sprite):
                 
     def fight(self, opponent):
         if self.ATT > opponent.DEF:
-            opponent.damage(self.DMG)               
+            opponent.damage(self.DMG, self)               
     
-    def damage(self, dmg):
+    def damage(self, dmg, source= None):
         self.HP_c -= dmg
         if self.HP_c <= 0:
             self.Alive = False
             self.set_Image("Dead")
             self.brain.set_personality(0)
+        if source != None:
+            self.brain.set_agro(source)
                                     
         
     def spawn(self,x,y):
@@ -641,8 +657,11 @@ class Brain(object):
         self.trycount = 0
         #turn counter
         self.turncount = 0
+        #agro target
+        self.aggrovator = self.body.level.player1
         
-        
+    def set_agro(self, opponent):
+        self.aggrovator = opponent
         
     def set_personality(self, persona):
         self.flavor = self.ptypes[persona]
@@ -681,41 +700,41 @@ class Brain(object):
 
         if self.state == "Charger":
             if self.body.AP_c >= 2:
-                if self.body.mapx > self.body.level.player1.mapx and self.body.mapy > self.body.level.player1.mapy:
+                if self.body.mapx > self.aggrovator.mapx and self.body.mapy > self.aggrovator.mapy:
                     self.body.command("UL")
-                if self.body.mapx < self.body.level.player1.mapx and self.body.mapy > self.body.level.player1.mapy:
+                if self.body.mapx < self.aggrovator.mapx and self.body.mapy > self.aggrovator.mapy:
                     self.body.command("UR")
-                if self.body.mapx > self.body.level.player1.mapx and self.body.mapy < self.body.level.player1.mapy:
+                if self.body.mapx > self.aggrovator.mapx and self.body.mapy < self.aggrovator.mapy:
                     self.body.command("LL")
-                if self.body.mapx < self.body.level.player1.mapx and self.body.mapy < self.body.level.player1.mapy:
+                if self.body.mapx < self.aggrovator.mapx and self.body.mapy < self.aggrovator.mapy:
                     self.body.command("LR")
-            if self.body.mapx > self.body.level.player1.mapx:
+            if self.body.mapx > self.aggrovator.mapx:
                 self.body.command("L")
-            if self.body.mapx < self.body.level.player1.mapx:
+            if self.body.mapx < self.aggrovator.mapx:
                 self.body.command("R")
-            if self.body.mapy > self.body.level.player1.mapy:
+            if self.body.mapy > self.aggrovator.mapy:
                 self.body.command("U")
-            if self.body.mapy < self.body.level.player1.mapy:
+            if self.body.mapy < self.aggrovator.mapy:
                 self.body.command("D")
             return
             
         if self.state == "Scared":
             if self.body.AP_c >= 2:
-                if self.body.mapx > self.body.level.player1.mapx and self.body.mapy > self.body.level.player1.mapy:
+                if self.body.mapx > self.aggrovator.mapx and self.body.mapy > self.aggrovator.mapy:
                     self.body.command("LR")
-                if self.body.mapx < self.body.level.player1.mapx and self.body.mapy > self.body.level.player1.mapy:
+                if self.body.mapx < self.aggrovator.mapx and self.body.mapy > self.aggrovator.mapy:
                     self.body.command("LL")
-                if self.body.mapx > self.body.level.player1.mapx and self.body.mapy < self.body.level.player1.mapy:
+                if self.body.mapx > self.aggrovator.mapx and self.body.mapy < self.aggrovator.mapy:
                     self.body.command("UR")
-                if self.body.mapx < self.body.level.player1.mapx and self.body.mapy < self.body.level.player1.mapy:
+                if self.body.mapx < self.aggrovator.mapx and self.body.mapy < self.aggrovator.mapy:
                     self.body.command("UL")
-            if self.body.mapx > self.body.level.player1.mapx:
+            if self.body.mapx > self.aggrovator.mapx:
                 self.body.command("R")
-            if self.body.mapx < self.body.level.player1.mapx:
+            if self.body.mapx < self.aggrovator.mapx:
                 self.body.command("L")
-            if self.body.mapy > self.body.level.player1.mapy:
+            if self.body.mapy > self.aggrovator.mapy:
                 self.body.command("D")
-            if self.body.mapy < self.body.level.player1.mapy:
+            if self.body.mapy < self.aggrovator.mapy:
                 self.body.command("U")
             return
             
@@ -723,6 +742,7 @@ class Brain(object):
         
         #one-note
         if self.fnum < 5:
+            self.turncount = 0
             if self.fnum == 3:
                 self.body.set_Image("Angry")
             if self.fnum == 4:
@@ -731,6 +751,7 @@ class Brain(object):
             
         #hunter
         if self.fnum == 5:
+            self.turncount = 0
             if self.state == "Charger":
                 self.body.set_Image("Angry")
             else:
@@ -743,17 +764,14 @@ class Brain(object):
           
         #scaredy cat
         if self.fnum == 6:
+            self.turncount = 0
             if self.body.sees_player():
                 self.state = "Scared"
                 self.body.set_Image("Scared")
-                self.turncount = 0
+                
             else:
-                if self.turncount > 6:
-                    self.state = "Static"
-                    self.body.set_Image("Species")
-                elif self.turncount > 4:
-                    self.state = "Wanderer"
-                    self.body.set_Image("Species")
+                self.state = "Wanderer"
+                self.body.set_Image("Species")
                 
             
             
