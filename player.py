@@ -496,9 +496,9 @@ class Player(pygame.sprite.Sprite):
         
     def fight(self, opponent):
         if self.ATT > opponent.DEF:
-            opponent.damage(self.DMG)
+            opponent.damage(self.DMG, self)
             
-    def damage(self, dmg):
+    def damage(self, dmg, source= None):
         self.HP_c -= dmg
         if self.HP_c <= 0:
             self.level.Game_Over = 3
