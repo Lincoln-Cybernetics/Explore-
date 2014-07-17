@@ -37,7 +37,7 @@ class Land(pygame.sprite.Sprite):
 		self.dp = random.randrange(300)#random progress toward state change
 		self.desert_prone = False
 		self.desert_thresh = { "Grassland" : 400, "Grass and Trees" : 600, "Scrub": 200, "Water": 800, "Oasis": 600}
-		self.desert_conv = { "Grassland" : 7, "Grass and Trees" : 1, "Scrub": 8, "Water": 16, "Oasis": 8}
+		self.desert_conv = { "Grassland" : 7, "Grass and Trees" : 1, "Scrub": 8, "Water": 16, "Oasis": 7}
 		
 		
 		
