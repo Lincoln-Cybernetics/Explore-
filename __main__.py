@@ -60,6 +60,7 @@ class Game(object):
         
         
         self.mapgen(self.xmax,self.ymax,self.mapology)
+        self.player1.add_Perk("Swimmer")
         self.player1.add_Perk("Mountaineer")
         self.iterate_Game()
     
@@ -156,10 +157,10 @@ class Game(object):
                 else:
                     acre.set_type(landtype)
                     acre.get_image()
-                    if landtype == 14 or landtype == 15 or landtype == 12:
-                        for mobbo in self.mobs:
-                            mobbo.unpassable.add(acre)
-                        self.player1.unpassable.add(acre)
+                    #if landtype == 14 or landtype == 15 or landtype == 12:
+                        #for mobbo in self.mobs:
+                        #    mobbo.unpassable.add(acre)
+                        #self.player1.unpassable.add(acre)
                 acre.spawn(a, b)
                 self.background.add(acre)
                 mapcol.append(acre)
@@ -192,6 +193,12 @@ class Game(object):
             rnumx = random.randrange(x-2)+1
             rnumy = random.randrange(y-2)+1
             self.player1.spawn(rnumx,rnumy)
+            for mobbo in self.mobs:
+                if mobbo.mapx == self.player1.mapx and mobbo.mapy == self.player1.mapy:
+                    mobbo.kill()
+            for itemo in self.items:
+                if itemo.mapx == self.player1.mapx and itemo.mapy == self.player1.mapy:
+                    itemo.kill()
             self.player1.position_scrn(6,3)
             self.normalize(rnumx,rnumy) 
         
@@ -209,7 +216,9 @@ class Game(object):
                     for wa in range(3):
                         for ha in range(3):
                             biome.neighbors.add(self.mymap[wid+wa-1][hei+ha-1])
-            
+        self.sea_lower()
+        self.sea_fill()  
+        self.set_unpass() 
         
     def advance_season(self):
         if self.season == 0:
@@ -226,7 +235,38 @@ class Game(object):
             self.sheet = pygame.image.load('Spring.png').convert()  
         self.animator.set_Sheet(self.sheet,100,100)
         #for land in self.terrain:
-        #   land.get_image()                    
+        #   land.get_image()
+        
+           
+    def sea_lower(self):
+        for place in self.terrain:
+            if place.flavnum == 15:
+                if random.randrange(100) < 80:
+                    place.set_type(14)
+            if place.flavnum == 14:
+                if random.randrange(100) < 70:
+                    place.set_type(13)
+            if place.flavnum == 13:
+                if random.randrange(100) < 60:
+                    place.set_type(1)
+        
+    def sea_fill(self):
+        for place in self.terrain:
+            if place.flavnum == 15:
+                tot = 0
+                for location in place.neighbors:
+                    if location.flavnum == 14:
+                        tot += 1
+                if tot <= 4:
+                    place.set_type(13)
+        
+            if place.flavnum == 14:
+                excepts = [0,15,14,12,11,10]
+                for location in place.neighbors:
+                    if location.flavnum in excepts:
+                        pass
+                    else:
+                        location.set_type(13)
                         
     def desertify(self):    
         for place in self.terrain:
@@ -242,6 +282,21 @@ class Game(object):
             
     def get_passable(self):
         return self.passable
+        
+    def set_unpass(self):
+        for land in self.terrain:
+            if land.flavnum == 12:
+                for fighter in self.fightable:
+                    if "Mountaineer" in fighter.perks:
+                        pass
+                    else:
+                        fighter.unpassable.add(land)
+            if land.flavnum == 14 or land.flavnum == 15:
+                for fighter in self.fightable:
+                    if "Swimmer" in fighter.perks:
+                        pass
+                    else:
+                        fighter.unpassable.add(land)
         
     def iterate_Game(self):
         while self.Game_Over == 0:
@@ -323,6 +378,7 @@ class Game(object):
             if self.season == 0 or self.season == 1:
                 self.grow_forest()
             self.advance_lands()
+            self.set_unpass()
             self.display()
                 
                 
