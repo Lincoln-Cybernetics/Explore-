@@ -28,6 +28,7 @@ class Player(pygame.sprite.Sprite):
         
         #item inventory
         self.inventory = {'axe': 0, 'wood': 0, 'telescope': 0, 'canteen':0, 'bearskin':0, 'squatchhide':0, 'yetiskin':0, 'coin':0, 'binoculars':0}
+        self.score = 0
         
         #player stats
         self.visibility = 1
@@ -359,6 +360,8 @@ class Player(pygame.sprite.Sprite):
         
     def itemcheck(self):
         for item in pygame.sprite.spritecollide(self, self.level.items, True):
+            self.score += item.points
+            print item.points
             if item.flavor == 'gem':
                 self.level.Game_Over = 2
                 
