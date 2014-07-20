@@ -20,7 +20,7 @@ class Game(object):
         #World
         self.xmax = 25
         self.ymax = 25
-        self.mapology = 'Random'
+        self.mapology = 'Proced1'
         self.season = 0
         self.daycount = 0
         self.daymax = 10
@@ -117,11 +117,11 @@ class Game(object):
                     
                 elif maptype == 'Proced1':
                     #grassland/trees
-                    #common = [1,2,3,13]
-                    #uncommon = [4,5,6,7]
-                    #rare = [8,9,10]
-                    #vrare = [12,15]
-                    #self.passable = 1
+                    common = [1,2,3,13]
+                    uncommon = [4,5,6,7]
+                    rare = [8,9,10]
+                    vrare = [12,15]
+                    self.passable = 1
                     
                     #desert
                     #common = [8]
@@ -131,10 +131,10 @@ class Game(object):
                     #self.passable = 7
                     
                     #Forest
-                    common = [3,4,5,9]
-                    uncommon = [1,2,6]
-                    rare = [7,13]
-                    vrare = [10,11,12]
+                    #common = [3,4,5,9]
+                    #uncommon = [1,2,6]
+                    #rare = [7,13]
+                    #vrare = [10,11,12]
                     self.passable = 2
                     
                     landex = random.randrange(256)
@@ -218,6 +218,12 @@ class Game(object):
                             biome.neighbors.add(self.mymap[wid+wa-1][hei+ha-1])
         self.sea_lower()
         self.sea_fill()  
+        for i in range(1000):
+            self.desertify()
+            #self.grow_forest()
+            self.advance_lands()
+        #self.sea_lower()
+        self.sea_fill() 
         self.set_unpass() 
         
     def advance_season(self):
@@ -252,16 +258,22 @@ class Game(object):
         
     def sea_fill(self):
         for place in self.terrain:
+            excepts = [0,15,14,12,11,10]
             if place.flavnum == 15:
-                tot = 0
+                #tot = 0
+                #for location in place.neighbors:
+                #    if location.flavnum == 14:
+                #        tot += 1
+                #if tot <= 4:
+                #    place.set_type(13)
                 for location in place.neighbors:
-                    if location.flavnum == 14:
-                        tot += 1
-                if tot <= 4:
-                    place.set_type(13)
+                    if location.flavnum in excepts:
+                        pass
+                    else:
+                        location.set_type(14)
         
             if place.flavnum == 14:
-                excepts = [0,15,14,12,11,10]
+                
                 for location in place.neighbors:
                     if location.flavnum in excepts:
                         pass
@@ -416,8 +428,9 @@ class Game(object):
         HPstr = "HP: "+str(self.player1.HP_c)+"/"+str(self.player1.HP_max)+"     "
         APstr =  "AP: "+str(self.player1.AP_c)+"/"+str(self.player1.AP_max)+"     "
         HYDstr = "HYD: "+str(self.player1.HYD_c)+"/"+str(self.player1.HYD_max)+"     "
+        SCOREstr = "Score: "+str(self.player1.score)+"     "
         
-        text = font.render(HPstr + APstr+ HYDstr, 1, (255, 255, 255), (0,0,0))
+        text = font.render(HPstr + APstr+ HYDstr+SCOREstr, 1, (255, 255, 255), (0,0,0))
         scrstr = "SCR: "+ str(self.player1.scrnx)+","+str(self.player1.scrny)+"     "
         mapstr = "MAP: "+str(self.player1.mapx)+","+str(self.player1.mapy)+"     "
         debugstr = scrstr + mapstr
