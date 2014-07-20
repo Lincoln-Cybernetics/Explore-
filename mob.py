@@ -53,7 +53,7 @@ class Mob(pygame.sprite.Sprite):
         self.vision = 1
         self.inventory = {'axe': 0, 'wood': 0, 'telescope': 0, 'canteen':0, 'bearskin':0, 'squatchhide':0, 'yetiskin':0}
         self.perks = []
-        
+        self.points = 0
         self.skipflag = False
         
         #fighting
@@ -98,6 +98,7 @@ class Mob(pygame.sprite.Sprite):
             self.DMG = 0
             self.HYD_max = 10
             self.HYD_c = 10
+            self.points = 50
         #Bear
         if kind == 1:
             self.ATflag = 0
@@ -110,6 +111,7 @@ class Mob(pygame.sprite.Sprite):
             self.HYD_max = 10
             self.HYD_c = 10
             self.inventory['bearskin'] = 1
+            self.points = 100
             
         #Yeti
         if kind == 2:
@@ -123,6 +125,7 @@ class Mob(pygame.sprite.Sprite):
             self.HYD_max = 10
             self.HYD_c = 10
             self.inventory['yetiskin'] = 1
+            self.points = 200
             
         #Sasquatch
         if kind == 3:
@@ -136,6 +139,7 @@ class Mob(pygame.sprite.Sprite):
             self.HYD_max = 10
             self.HYD_c = 10
             self.inventory['squatchhide'] = 1
+            self.points = 150
             
         #Bluebird
         if kind == 4:
@@ -149,7 +153,7 @@ class Mob(pygame.sprite.Sprite):
             self.HYD_max = 30
             self.HYD_c = 30
             self.DEF = 1
-            
+            self.points = 10
         
         self.set_Image("Species")   
     
@@ -273,6 +277,9 @@ class Mob(pygame.sprite.Sprite):
     def damage(self, dmg, source= None):
         self.HP_c -= dmg
         if self.HP_c <= 0:
+            if source == self.level.player1:
+                self.level.player1.score += self.points
+                print self.points
             self.Alive = False
             self.set_Image("Dead")
             self.brain.set_personality(0)
