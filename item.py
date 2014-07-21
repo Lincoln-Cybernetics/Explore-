@@ -12,7 +12,7 @@ class Item(pygame.sprite.Sprite):
         
         
         #type
-        self.flavor_saver = ['gem', 'axe', 'sammich', 'telescope', 'canteen', 'coin', 'binoculars']
+        self.flavor_saver = ['gem', 'axe', 'sammich', 'telescope', 'canteen', 'coin', 'binoculars', 'ruby']
         self.flavor = 'gem'
         self.points = 0
         #location
@@ -68,6 +68,11 @@ class Item(pygame.sprite.Sprite):
         if itype == 6:
             xind = 5
             yind = 3
+        #ruby
+        if itype == 7:
+			xind = 7
+			yind = 0
+			self.points = 800
             
             
         self.level.warehouse.set_Img(xind,yind)
