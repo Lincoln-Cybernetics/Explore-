@@ -272,11 +272,16 @@ class Player(pygame.sprite.Sprite):
                 
             #Chop Trees 
             if cmd == "Chop":
-                choppable = { "Dense Woods":4, "Medium Woods":3, "Light Woods": 2, "Grass and Trees":1 }
+                choppable = { "Dense Woods":4, "Medium Woods":3, "Light Woods": 2, "Grass and Trees":1, "Cactus":8 }
                 if self.inventory['axe'] > 0:
                     if self.level.mymap[self.mapx][self.mapy].flavor in choppable:
                         if self.reckonAP(self.APcost[cmd]):
-                            self.inventory['wood'] += self.level.mymap[self.mapx][self.mapy].wood_level
+                            if self.myloc.flavor == "Cactus":
+                                self.HYD_c += 5
+                                if self.HYD_c > self.HYD_max:
+                                    self.HYD_c = self.HYD_max
+                            else:
+                                self.inventory['wood'] += self.level.mymap[self.mapx][self.mapy].wood_level
                             self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
                             self.level.mymap[self.mapx][self.mapy].reset()
                         else:
@@ -361,9 +366,10 @@ class Player(pygame.sprite.Sprite):
     def itemcheck(self):
         for item in pygame.sprite.spritecollide(self, self.level.items, True):
             self.score += item.points
-            print item.points
+            
             if item.flavor == 'gem':
-                self.level.Game_Over = 2
+                #self.level.Game_Over = 2
+                pass
                 
             if item.flavor == 'axe':
                 self.inventory['axe'] += 1
@@ -386,22 +392,32 @@ class Player(pygame.sprite.Sprite):
                 self.inventory['binoculars'] += 1
                 
             if item.flavor == 'canteen':
-                self.HYD_max += 10
-                if self.HYD_max > 40:
-                    self.HYD_max = 40
-                self.inventory['canteen'] += 1
+                if self.inventory['canteen'] >= 4:
+                    pass
+                else:
+                    self.HYD_max += 10
+                    self.inventory['canteen'] += 1
                 
             if item.flavor == 'coin':
                 self.inventory['coin'] += 1
                 
                 
     def hydrate(self):
+        for mon in pygame.sprite.spritecollide(self, self.level.landmarks, False):
+                if mon.flavor == "FoY":
+                    self.HYD_max = 1000
+                    self.HYD_c = 1000
+                    self.HP_max = 1000
+                    self.HP_c = 1000
         for land in pygame.sprite.spritecollide(self, self.level.terrain, False):
             #print land.wood_level, land.wp
             if land.flavor == "Scrub":
                 self.HYD_c -= 1
             elif land.flavor == "Dunes":
                 self.HYD_c -= 2
+            elif land.flavor == "Cactus":
+                self.HYD_c -= 2
+                self.damage(1)
             elif land.flavor == "Water":
                 self.HYD_c = self.HYD_max
             elif land.flavor == "Oasis":
@@ -438,10 +454,16 @@ class Player(pygame.sprite.Sprite):
     def mountainview(self, aug= 0):
         if self.myloc.flavor == "Mountain" or self.myloc.flavor == "Extinct Volcano" or self.myloc.flavor == "Active Volcano":
             self.visibility = self.vision + 2 + aug
+            for mon in pygame.sprite.spritecollide(self, self.level.landmarks, False):
+                if mon.flavor == "Peak":
+                    self.visibility = self.vision + 3 + aug
         elif self.myloc.flavor == "Hills":
             self.visibility = self.vision + 1 + aug
         else:
             self.visibility = self.vision + aug
+            
+                
+            
 
     def set_Image(self, name):
         xind = 7
