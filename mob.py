@@ -34,6 +34,7 @@ class Mob(pygame.sprite.Sprite):
         self.mapy = 0 
         self.scrnx = 0
         self.scrny = 0
+        
         #reference of old location data
         
         self.pxs = self.scrnx
@@ -279,7 +280,6 @@ class Mob(pygame.sprite.Sprite):
         if self.HP_c <= 0:
             if source == self.level.player1:
                 self.level.player1.score += self.points
-                print self.points
             self.Alive = False
             self.set_Image("Dead")
             self.brain.set_personality(0)
@@ -302,6 +302,9 @@ class Mob(pygame.sprite.Sprite):
     def mountainview(self, aug= 0):
         if self.myloc.flavor == "Mountain" or self.myloc.flavor == "Extinct Volcano" or self.myloc.flavor == "Active Volcano":
             self.visibility = self.vision + 2 + aug
+            for mon in pygame.sprite.spritecollide(self, self.level.landmarks, False):
+                if mon.flavor == "Peak":
+                    self.visibility = self.vision + 3 + aug
         elif self.myloc.flavor == "Hills":
             self.visibility = self.vision + 1 + aug
         else:
@@ -380,6 +383,9 @@ class Mob(pygame.sprite.Sprite):
                 self.HYD_c -= 1
             elif land.flavor == "Dunes":
                 self.HYD_c -= 2
+            elif land.flavor == "Cactus":
+                self.HYD_c -= 2
+                self.damage(1)
             elif land.flavor == "Water":
                 self.HYD_c = self.HYD_max
             elif land.flavor == "Oasis":
@@ -402,6 +408,7 @@ class Mob(pygame.sprite.Sprite):
         self.pmx = self.mapx
         self.pmy = self.mapy
         self.skipflag = False
+        self.myloc = self.level.mymap[self.mapx][self.mapy]
         
         #Move Up
         if cmd == "U":
@@ -500,16 +507,21 @@ class Mob(pygame.sprite.Sprite):
                     self.skipflag = False
                     
         #Chop Trees 
-        if cmd == "Chop":
-            choppable = { "Dense Woods":4, "Medium Woods":3, "Light Woods": 2, "Grass and Trees":1 }
-            if self.inventory['axe'] > 0:
-                if self.level.mymap[self.mapx][self.mapy].flavor in choppable:
-                    if self.reckonAP(self.APcost[cmd]):
-                        self.inventory['wood'] += self.level.mymap[self.mapx][self.mapy].wood_level
-                        self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
-                        self.level.mymap[self.mapx][self.mapy].reset()
-                    else:
-                        self.skipflag = True
+            if cmd == "Chop":
+                choppable = { "Dense Woods":4, "Medium Woods":3, "Light Woods": 2, "Grass and Trees":1, "Cactus":8 }
+                if self.inventory['axe'] > 0:
+                    if self.level.mymap[self.mapx][self.mapy].flavor in choppable:
+                        if self.reckonAP(self.APcost[cmd]):
+                            if self.myloc.flavor == "Cactus":
+                                self.HYD_c += 5
+                                if self.HYD_c > self.HYD_max:
+                                    self.HYD_c = self.HYD_max
+                            else:
+                                self.inventory['wood'] += self.level.mymap[self.mapx][self.mapy].wood_level
+                            self.level.mymap[self.mapx][self.mapy].set_type(choppable[self.level.mymap[self.mapx][self.mapy].flavor])
+                            self.level.mymap[self.mapx][self.mapy].reset()
+                        else:
+                            self.skipflag = True
             
         #Plant Trees
         if cmd == "Plant":
