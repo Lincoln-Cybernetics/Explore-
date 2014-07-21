@@ -5,6 +5,7 @@ import tile
 import random
 import item
 import mob
+import mapgen
 
 class Game(object):
     def main (self, screen):
@@ -18,14 +19,14 @@ class Game(object):
         self.screen = screen
         
         #World
-        self.xmax = 25
-        self.ymax = 25
+        self.xmax = 40
+        self.ymax = 40
         self.mapology = 'Proced1'
         self.season = 0
         self.daycount = 0
         self.daymax = 10
         self.passable = 1
-        
+        self.terraformer = mapgen.Mapgen(self)
         
         #spritesheet dis-aggregators
         self.tilex = 100
@@ -58,138 +59,31 @@ class Game(object):
         self.player1 = player.Player(self, self.players)
         self.player1.add(self.fightable)
         
-        
+        self.mymap = self.terraformer.generate(self.xmax, self.ymax,"grassland")
+        self.terraformer.populate(1)
+        self.terraformer.litter(5)
+        self.terraformer.monumentalize(5)
         self.mapgen(self.xmax,self.ymax,self.mapology)
-        self.player1.add_Perk("Swimmer")
-        self.player1.add_Perk("Mountaineer")
+        
+        #self.player1.add_Perk("Swimmer")
+        #self.player1.add_Perk("Mountaineer")
         self.iterate_Game()
     
-    def spawnmob(self):
-        dude = mob.Mob(self, self.mobs, self.background, self.fightable)
-        dude.set_type(random.randrange(5))
-        dude.set_species(random.randrange(2))
-        dude.spawn(random.randrange((self.xmax)-2)+1, random.randrange((self.ymax)-2)+1)
+    
         
         
     def mapgen(self, x,y, maptype):
-        sizefactor = (x/10) + (y/10)
-        
-        mygem = item.Item(self, self.items)
-        mygem.set_type(0)
-        
-        mymark = tile.Landmark(self, self.landmarks)
-        mymark.set_type(1)
-        mymid = tile.Landmark(self, self.landmarks)
-        mymid.set_type(0)
+       
         
         if maptype == 'Basic':
-            myaxe = item.Item(self, self.items)
-            myaxe.set_type(1)
-            mysamm = item.Item(self, self.items)
-            mysamm.set_type(2)
-            mydude = mob.Mob(self, self.mobs)
-            mydude.set_type(4)
-            mydude.set_species(1)
-            myscope = item.Item(self, self.items)
-            myscope.set_type(3)
-            mycant = item.Item(self, self.items)
-            mycant.set_type(4)
-            
-        elif maptype == 'Random' or 'Proced1':
-            for num in range(sizefactor*3):
-                itemo = item.Item(self, self.items)
-                itemo.set_type(random.randrange(6)+1)
-            for umb in range(sizefactor*3):
-                mobbo = mob.Mob(self, self.mobs)
-                mobbo.set_type(random.randrange(7))
-                mobbo.set_species(random.randrange(4)+1)
         
-        
-        for a in range(x):
-            mapcol = []
-            for b in range(y):
-                
-                if maptype == 'Basic':
-                    landtype = 1
-                    
-                elif maptype == 'Random':
-                    landtype = random.randrange(16)+1
-                    
-                elif maptype == 'Proced1':
-                    #grassland/trees
-                    common = [1,2,3,13]
-                    uncommon = [4,5,6,7]
-                    rare = [8,9,10]
-                    vrare = [12,15]
-                    self.passable = 1
-                    
-                    #desert
-                    #common = [8]
-                    #uncommon = [7,16]
-                    #rare = [9]
-                    #vrare = [1,2]
-                    #self.passable = 7
-                    
-                    #Forest
-                    #common = [3,4,5,9]
-                    #uncommon = [1,2,6]
-                    #rare = [7,13]
-                    #vrare = [10,11,12]
-                    self.passable = 2
-                    
-                    landex = random.randrange(256)
-                    if landex < 256:
-                        landtype = random.choice(common)
-                    if landex < 64:
-                        landtype = random.choice(uncommon)
-                    if landex < 16:
-                        landtype = random.choice(rare)
-                    if landex < 2:
-                        landtype = random.choice(vrare)
-                    
-                    
-                acre = tile.Land(self, self.terrain)
-                if a == 0 or b == 0 or a == x-1 or b == y-1:
-                    acre.set_type(0)
-                    self.space.add(acre)
-                    for mobbo in self.mobs:
-                        mobbo.unpassable.add(acre)
-                else:
-                    acre.set_type(landtype)
-                    acre.get_image()
-                    #if landtype == 14 or landtype == 15 or landtype == 12:
-                        #for mobbo in self.mobs:
-                        #    mobbo.unpassable.add(acre)
-                        #self.player1.unpassable.add(acre)
-                acre.spawn(a, b)
-                self.background.add(acre)
-                mapcol.append(acre)
-                
-            self.mymap.append( mapcol )
-        
-        if maptype == 'Basic':
-            mygem.spawn(5,5)
-            myaxe.spawn(8,4)
-            mysamm.spawn(1,6)
-            mydude.spawn(5,1)
-            myscope.spawn(3,2)
-            mycant.spawn(10,10)
-            mymid.spawn(8,8)
-            mymark.spawn(1,1)
             self.mymap[4][4].set_type(5)
             self.player1.spawn(3,3)
             self.player1.position_scrn(6,3)
             self.normalize(3,3)
             
         elif maptype == 'Random' or maptype == 'Proced1':
-            mygem.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
-            mymark.spawn(random.randrange(x-3)+1, random.randrange(y-3)+1)
-            mymid.spawn(random.randrange(x-3)+1, random.randrange(y-3)+1)
-            
-            for itemo in self.items:
-                itemo.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
-            for mobbo in self.mobs:
-                mobbo.spawn(random.randrange(x-2)+1, random.randrange(y-2)+1)
+        
             rnumx = random.randrange(x-2)+1
             rnumy = random.randrange(y-2)+1
             self.player1.spawn(rnumx,rnumy)
@@ -207,23 +101,15 @@ class Game(object):
         self.background.add(self.mobs)
         self.fightable.add(self.mobs)
         
-        for wid in range(x):
-            for hei in range(y):
-                biome = self.mymap[wid][hei]
-                if biome in self.space:
-                    pass
-                else:
-                    for wa in range(3):
-                        for ha in range(3):
-                            biome.neighbors.add(self.mymap[wid+wa-1][hei+ha-1])
-        self.sea_lower()
-        self.sea_fill()  
-        for i in range(1000):
-            self.desertify()
-            #self.grow_forest()
-            self.advance_lands()
-        #self.sea_lower()
-        self.sea_fill() 
+        
+        #self.terraformer.sea_lower()
+        #self.terraformer.sea_fill()  
+        #for i in range(1000):
+            #self.terraformer.desertify()
+            #self.terraformer.grow_forest()
+            #self.advance_lands()
+        self.terraformer.sea_lower()
+        self.terraformer.sea_fill() 
         self.set_unpass() 
         
     def advance_season(self):
@@ -244,49 +130,8 @@ class Game(object):
         #   land.get_image()
         
            
-    def sea_lower(self):
-        for place in self.terrain:
-            if place.flavnum == 15:
-                if random.randrange(100) < 80:
-                    place.set_type(14)
-            if place.flavnum == 14:
-                if random.randrange(100) < 70:
-                    place.set_type(13)
-            if place.flavnum == 13:
-                if random.randrange(100) < 60:
-                    place.set_type(1)
-        
-    def sea_fill(self):
-        for place in self.terrain:
-            excepts = [0,15,14,12,11,10]
-            if place.flavnum == 15:
-                #tot = 0
-                #for location in place.neighbors:
-                #    if location.flavnum == 14:
-                #        tot += 1
-                #if tot <= 4:
-                #    place.set_type(13)
-                for location in place.neighbors:
-                    if location.flavnum in excepts:
-                        pass
-                    else:
-                        location.set_type(14)
-        
-            if place.flavnum == 14:
-                
-                for location in place.neighbors:
-                    if location.flavnum in excepts:
-                        pass
-                    else:
-                        location.set_type(13)
-                        
-    def desertify(self):    
-        for place in self.terrain:
-            place.desert_check()
-            
-    def grow_forest(self):
-        for place in self.terrain:
-            place.forest_check()
+    
+   
             
     def advance_lands(self):
         for place in self.terrain:
@@ -386,9 +231,9 @@ class Game(object):
                 self.daycount = 0
                 self.advance_season()
             if self.season == 1 or self.season == 2:
-                self.desertify()
+                self.terraformer.desertify()
             if self.season == 0 or self.season == 1:
-                self.grow_forest()
+                self.terraformer.grow_forest()
             self.advance_lands()
             self.set_unpass()
             self.display()
@@ -424,17 +269,17 @@ class Game(object):
         screen.fill((0,0,0))
         
         #player stats
-        font = pygame.font.Font(None, 20)
+        font = pygame.font.Font(None, 40)
         HPstr = "HP: "+str(self.player1.HP_c)+"/"+str(self.player1.HP_max)+"     "
         APstr =  "AP: "+str(self.player1.AP_c)+"/"+str(self.player1.AP_max)+"     "
         HYDstr = "HYD: "+str(self.player1.HYD_c)+"/"+str(self.player1.HYD_max)+"     "
         SCOREstr = "Score: "+str(self.player1.score)+"     "
         
         text = font.render(HPstr + APstr+ HYDstr+SCOREstr, 1, (255, 255, 255), (0,0,0))
-        scrstr = "SCR: "+ str(self.player1.scrnx)+","+str(self.player1.scrny)+"     "
-        mapstr = "MAP: "+str(self.player1.mapx)+","+str(self.player1.mapy)+"     "
-        debugstr = scrstr + mapstr
-        text2 = font.render(debugstr, 1, (255,255,255), (0,0,0))
+        #scrstr = "SCR: "+ str(self.player1.scrnx)+","+str(self.player1.scrny)+"     "
+        #mapstr = "MAP: "+str(self.player1.mapx)+","+str(self.player1.mapy)+"     "
+        #debugstr = scrstr + mapstr
+        #text2 = font.render(debugstr, 1, (255,255,255), (0,0,0))
         axstr = ""
         if self.player1.inventory['axe'] > 0:
             axstr = 'axe'+"   "
@@ -473,7 +318,7 @@ class Game(object):
         self.space.draw(screen)
         self.players.draw(screen)
         screen.blit(text, (0,0))
-        screen.blit(text2, (0,50))
+        #screen.blit(text2, (0,50))
         screen.blit(text3, (0,25))
         
         pygame.display.flip()
@@ -525,14 +370,17 @@ class Game(object):
                 self.visible.remove(villian)
             for land in pygame.sprite.spritecollide(villian,self.visible, False):
                 if land in self.terrain:
-                    self.revealed.add(thing)
+                    self.revealed.add(villian)
                     self.visible.add(villian)
                 
         for lndmrk in self.landmarks:
             
             for land in pygame.sprite.spritecollide(lndmrk,self.visible, False):
-                self.revealed.add(thing)
+                self.revealed.add(lndmrk)
                 self.visible.add(lndmrk)
+                if(lndmrk.revealed == False):
+					lndmrk.revealed = True
+					self.player1.score += lndmrk.points
     
     def normalize(self,x,y):
         #normalize x
