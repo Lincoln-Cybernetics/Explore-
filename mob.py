@@ -66,6 +66,8 @@ class Mob(pygame.sprite.Sprite):
         self.HYD_max = 10
         self.HYD_c = 10
         self.enemy = 0
+        self.regeneration = 0
+        self.FOYflag  = False
         
         
     def sees_player(self):
@@ -178,10 +180,13 @@ class Mob(pygame.sprite.Sprite):
                 if land.flavor == "Ocean" or land.flavor == "Whirlpool":
                     self.unpassable.remove(land)
         if perk == "Runner":
-            #moves = ["U","D","L","R","UL","UR","LL","LR"]
-            #for move in moves:
-            #    self.APcost[move] -= 1
             pass
+        if perk == "Mountaineer":
+            for land in self.unpassable:
+                if land.flavor == "Active Volcano":
+                    self.unpassable.remove(land)
+        if perk == "Resilient":
+            self.regeneration += 1    
         
     def set_Image(self, hint):
         xind = 0
@@ -276,15 +281,22 @@ class Mob(pygame.sprite.Sprite):
             opponent.damage(self.DMG, self)               
     
     def damage(self, dmg, source= None):
-        self.HP_c -= dmg
-        if self.HP_c <= 0:
-            if source == self.level.player1:
-                self.level.player1.score += self.points
-            self.Alive = False
-            self.set_Image("Dead")
-            self.brain.set_personality(0)
-        if source != None:
-            self.brain.set_agro(source)
+        sanctuary = False
+        for mon in pygame.sprite.spritecollide(self, self.level.landmarks, False):
+                if mon.flavor == "Henge":
+                    sanctuary = True
+        if sanctuary:
+            pass
+        else:           
+            self.HP_c -= dmg
+            if self.HP_c <= 0:
+                if source == self.level.player1:
+                    self.level.player1.score += self.points
+                self.Alive = False
+                self.set_Image("Dead")
+                self.brain.set_personality(0)
+            if source != None:
+                self.brain.set_agro(source)
                                     
         
     def spawn(self,x,y):
@@ -378,6 +390,13 @@ class Mob(pygame.sprite.Sprite):
 
     
     def hydrate(self):
+        for mon in pygame.sprite.spritecollide(self, self.level.landmarks, False):
+                if mon.flavor == "FoY":
+                    self.HYD_max = 1000
+                    self.HYD_c = 1000
+                    if self.FOYflag == False:
+                        self.regeneration = 1
+                        self.FOYflag = True
         for land in pygame.sprite.spritecollide(self, self.level.terrain, False):
             if land.flavor == "Scrub":
                 self.HYD_c -= 1
@@ -386,6 +405,9 @@ class Mob(pygame.sprite.Sprite):
             elif land.flavor == "Cactus":
                 self.HYD_c -= 2
                 self.damage(1)
+            elif land.flavor == "Lava":
+                self.HYD_c -= 2
+                self.damage(2)
             elif land.flavor == "Water":
                 self.HYD_c = self.HYD_max
             elif land.flavor == "Oasis":
