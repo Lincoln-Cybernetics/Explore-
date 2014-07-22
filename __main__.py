@@ -43,7 +43,7 @@ class Game(object):
         #sprite groups
         self.players = pygame.sprite.Group()
         self.mobs = pygame.sprite.Group()
-        
+        self.menuthings = pygame.sprite.Group()
         self.terrain = pygame.sprite.Group()
         self.landmarks = pygame.sprite.Group()
         self.mymap = []
@@ -58,15 +58,43 @@ class Game(object):
         #player
         self.player1 = player.Player(self, self.players)
         self.player1.add(self.fightable)
+        #menu
+        self.menu1 = item.Pointer(self,self.menuthings)
+        self.menuval = 0
+       
         
-        self.mymap = self.terraformer.generate(self.xmax, self.ymax,"grassland")
+        self.mymap = self.terraformer.generate(self.xmax, self.ymax,"forest")
         self.terraformer.populate(1)
         self.terraformer.litter(5)
         self.terraformer.monumentalize(5)
         self.mapgen(self.xmax,self.ymax,self.mapology)
         
-        #self.player1.add_Perk("Swimmer")
-        #self.player1.add_Perk("Mountaineer")
+        #character creation menus
+        
+        #gender menu
+        self.menu1.choices = ["Manly", "Ladylike"]
+        self.iterate_menu()
+        if self.menuval == 0:
+            self.player1.gender = "M"
+        if self.menuval == 1:
+            self.player1.gender = "F"
+            self.player1.set_Image('R')
+            
+        #complexion menu
+        self.menu1.choices = ["Tanner than Tan", "Whiter than White"]
+        self.iterate_menu()
+        if self.menuval == 0:
+            self.player1.complexion = "B"
+        if self.menuval == 1:
+            self.player1.complexion = "W"
+            self.player1.set_Image('R')
+            
+        #perks menu
+        self.menu1.choices = ["Early Bird","Eagle Eye","Hearty","Strong","Fighter","Swimmer","Runner","Mountaineer","Resilient"]
+        self.iterate_menu()
+        self.player1.add_Perk(self.menu1.choices[self.menuval])
+            
+            
         self.iterate_Game()
     
     
@@ -160,9 +188,16 @@ class Game(object):
             
             self.Turn_Over = 0
             self.display()
-            self.player1.AP_c = self.player1.AP_max
-            for dude in self.mobs:
-                dude.AP_c = dude.AP_max
+            
+            #readies the player and the mobs for the next turn
+            for fighter in self.fightable:
+                fighter.AP_c = fighter.AP_max
+                if fighter.HYD_c > 0:
+                    fighter.HP_c += fighter.regeneration
+                    if fighter.HP_c > fighter.HP_max:
+                        fighter.HP_c = fighter.HP_max
+            
+           
             
             while self.Turn_Over == 0:
                 #self.player1.visibility = 1
@@ -263,6 +298,11 @@ class Game(object):
         if self.Game_Over == 4:
             print "You Died of thirst."
             print "R.I.P., Ranger Dan."
+            return
+       
+        if self.Game_Over == 5:
+           print "Game Over"
+           return
         
         
     def display(self):
@@ -379,8 +419,8 @@ class Game(object):
                 self.revealed.add(lndmrk)
                 self.visible.add(lndmrk)
                 if(lndmrk.revealed == False):
-					lndmrk.revealed = True
-					self.player1.score += lndmrk.points
+                    lndmrk.revealed = True
+                    self.player1.score += lndmrk.points
     
     def normalize(self,x,y):
         #normalize x
@@ -410,6 +450,102 @@ class Game(object):
             mob.position(mob.mapx+norx, mob.mapy+nory)
         for lm in self.landmarks:
             lm.position(lm.mapx+norx, lm.mapy+nory)
+            
+    def display_menu(self):
+        screen.fill((0,0,0))
+        screen.set_clip(0,0,self.winx,self.winy)
+        myfont = pygame.font.Font(None, 40)
+        menuspot = 0
+        cc = 0 
+        menux = 0
+        for choice in self.menu1.choices:
+            cc += 1
+            if cc > 6:
+                if menuspot == 600:
+                    menuspot = 0
+                menux = 400
+            text = myfont.render(choice, 1, (255, 255, 255), (0,0,0))
+            screen.blit(text, (200+menux,130+menuspot))
+            menuspot += 100
+            
+        for thing in self.menuthings:
+            thing.draw()
+        
+        pygame.display.flip()
+        
+            
+    def iterate_menu(self):
+        self.menu1.position(1,1)
+        self.menuval = 0
+        mymenuval = 0
+        numcols = len(self.menu1.choices)//6
+        lastcol = len(self.menu1.choices)%6
+        mycol = 0
+        myrow = 0
+        while self.Turn_Over == 0:
+            self.display_menu()
+             #player input   
+            for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.Game_Over = 5
+                        return
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        self.Game_Over = 5
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        
+                        #move up
+                        if event.key == pygame.K_KP8 or event.key == pygame.K_UP:
+                            if mymenuval == 0:
+                                pass
+                            else:
+                                self.menu1.position(self.menu1.scrnx,self.menu1.scrny-1)
+                                mymenuval -= 1
+                                myrow -= 1
+                         
+                         #move down   
+                        if event.key == pygame.K_KP2 or event.key == pygame.K_DOWN:
+                            if len(self.menu1.choices) < 6:
+                                ymax = len(self.menu1.choices)
+                            else:
+                                ymax = 5
+                                if mycol > numcols:
+                                    ymax = lastcol
+                            if mymenuval == ymax:
+                                pass
+                            else:
+                                self.menu1.position(self.menu1.scrnx,self.menu1.scrny+1)
+                                mymenuval += 1
+                                myrow += 1
+                        
+                        #move left
+                        if event.key == pygame.K_KP4 or event.key == pygame.K_LEFT:
+                            if mycol > 0:
+                                mycol -= 1
+                                mymenuval -= 6
+                                self.menu1.position(self.menu1.scrnx-4, self.menu1.scrny)
+                        
+                        #move right     
+                        if event.key == pygame.K_KP6 or event.key == pygame.K_RIGHT:
+                            if mycol< numcols:
+                                if mycol+1 < numcols:
+                                    mycol += 1
+                                    mymenuval += 6
+                                    self.menu1.position(self.menu1.scrnx+4,self.menu1.scrny)
+                                else:
+                                    if mycol+1 == numcols:
+                                        if myrow <= lastcol:
+                                            mycol += 1
+                                            mymenuval += 6
+                                            self.menu1.position(self.menu1.scrnx+4, self.menu1.scrny)
+                                    
+                            
+                        if event.key == pygame.K_KP_ENTER or event.key == pygame.K_RETURN:
+                            self.menuval = mymenuval
+                            self.Turn_Over = 0
+                            return
+                        
+                    
             
 
 ########################################################################
