@@ -11,6 +11,8 @@ class Player(pygame.sprite.Sprite):
         self.unpassable = pygame.sprite.Group()
         
         #base image
+        self.gender = "M"
+        self.complexion = "B"
         self.set_Image('R')
         self.orient = 'R'
         self.scrnx = 0
@@ -40,6 +42,7 @@ class Player(pygame.sprite.Sprite):
         self.APcost = {"U": 1, "D": 1, "L": 1, "R": 1, "UL":2, "UR": 2, "LL": 2, "LR":2, "Chop":3, "Plant": 3}
         self.perks = []
         
+        
         #fighting
         self.HP_max = 10
         self.HP_c = 10
@@ -47,6 +50,8 @@ class Player(pygame.sprite.Sprite):
         self.DEF = 2
         self.DMG = 2
         self.enemy = 0
+        self.regeneration = 0
+        self.FOYflag = False
         
         #status
         self.Alive = True
@@ -92,7 +97,8 @@ class Player(pygame.sprite.Sprite):
             for land in self.unpassable:
                 if land.flavor == "Active Volcano":
                     self.unpassable.remove(land)
-            
+        if perk == "Resilient":
+            self.regeneration += 1    
             
         
     def AP_check(self, biome, com):
@@ -407,8 +413,11 @@ class Player(pygame.sprite.Sprite):
                 if mon.flavor == "FoY":
                     self.HYD_max = 1000
                     self.HYD_c = 1000
-                    self.HP_max = 1000
-                    self.HP_c = 1000
+                    if self.FOYflag == False:
+                        self.regeneration = 1
+                        self.FOYflag = True
+                    #self.HP_max = 1000
+                    #self.HP_c = 1000
         for land in pygame.sprite.spritecollide(self, self.level.terrain, False):
             #print land.wood_level, land.wp
             if land.flavor == "Scrub":
@@ -418,6 +427,9 @@ class Player(pygame.sprite.Sprite):
             elif land.flavor == "Cactus":
                 self.HYD_c -= 2
                 self.damage(1)
+            elif land.flavor == "Lava":
+                self.HYD_c -= 2
+                self.damage(2)
             elif land.flavor == "Water":
                 self.HYD_c = self.HYD_max
             elif land.flavor == "Oasis":
@@ -470,12 +482,25 @@ class Player(pygame.sprite.Sprite):
         yind = 2
         if name == 'L':
             self.orient = 'L'
-            xind = 7
-            yind = 3
+            if self.complexion == "B":
+                yind = 3
+            elif self.complexion == "W":
+                yind = 1
+            if self.gender == "M":
+                xind = 7
+                
+            elif self.gender == "F":
+                xind = 5
         if name == 'R':
             self.orient = 'R'
-            xind = 7
-            yind = 2
+            if self.complexion == "B":
+                yind = 2
+            if self.complexion == "W":
+                yind = 0
+            if self.gender == "M":
+                xind = 7
+            elif self.gender == "F":
+                xind = 5
             
         self.level.animator.set_Img(xind,yind)
         self.image = self.level.animator.get_Img().convert()
@@ -524,8 +549,15 @@ class Player(pygame.sprite.Sprite):
             opponent.damage(self.DMG, self)
             
     def damage(self, dmg, source= None):
-        self.HP_c -= dmg
-        if self.HP_c <= 0:
-            self.level.Game_Over = 3
+        sanctuary = False
+        for mon in pygame.sprite.spritecollide(self, self.level.landmarks, False):
+                if mon.flavor == "Henge":
+                    sanctuary = True
+        if sanctuary:
+            pass
+        else:           
+            self.HP_c -= dmg
+            if self.HP_c <= 0:
+                self.level.Game_Over = 3
         
     
